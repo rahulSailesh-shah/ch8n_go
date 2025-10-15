@@ -1,50 +1,31 @@
-# Simple Makefile for a Go project
-
-# Build the application
-all: build test
-
 build:
 	@echo "Building..."
-	
-	
 	@go build -o main cmd/api/main.go
 
-# Run the application
-run:
+run-backend:
 	@go run cmd/api/main.go
-# Create DB container
-docker-run:
-	@if docker compose up --build 2>/dev/null; then \
+
+docker-up:
+	@if docker compose up --build -d 2>/dev/null; then \
 		: ; \
 	else \
 		echo "Falling back to Docker Compose V1"; \
 		docker-compose up --build; \
 	fi
 
-# Shutdown DB container
 docker-down:
-	@if docker compose down 2>/dev/null; then \
+	@if docker compose down -v 2>/dev/null; then \
 		: ; \
 	else \
 		echo "Falling back to Docker Compose V1"; \
 		docker-compose down; \
 	fi
 
-# Test the application
-test:
-	@echo "Testing..."
-	@go test ./... -v
-# Integrations Tests for the application
-itest:
-	@echo "Running integration tests..."
-	@go test ./internal/database -v
 
-# Clean the binary
 clean:
 	@echo "Cleaning..."
 	@rm -f main
 
-# Live Reload
 watch:
 	@if command -v air > /dev/null; then \
             air; \
@@ -61,4 +42,24 @@ watch:
             fi; \
         fi
 
-.PHONY: all build run test clean watch docker-run docker-down itest
+migrate-up:
+	@echo "Loading environment variables and running migrations..."
+	@export $$(grep -v '^#' .env | xargs) && goose -dir pkg/database/migrations postgres "$$DB_URL" up
+
+migrate-down:
+	@echo "Loading environment variables and rolling back migrations..."
+	@export $$(grep -v '^#' .env | xargs) && goose -dir pkg/database/migrations postgres "$$DB_URL" down
+
+migrate-status:
+	@echo "Loading environment variables and checking migration status..."
+	@export $$(grep -v '^#' .env | xargs) && goose -dir pkg/database/migrations postgres "$$DB_URL" status
+
+run-frontend:
+	@echo "Starting frontend..."
+	@cd frontend && bun run dev
+
+run-auth-service:
+	@echo "Starting auth service..."
+	@cd external/auth-service && bun run dev
+
+.PHONY: build run-backend clean watch docker-run docker-down migrate-up migrate-down migrate-status run-frontend run-auth-service
