@@ -11,8 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkflowsIndexRouteImport } from './routes/workflows/index'
+import { Route as ExecutionsIndexRouteImport } from './routes/executions/index'
+import { Route as CredentialsIndexRouteImport } from './routes/credentials/index'
+import { Route as WorkflowsWorkflowRouteImport } from './routes/workflows/$workflow'
+import { Route as ExecutionsExecutionIdRouteImport } from './routes/executions/$executionId'
+import { Route as CredentialsCredentialIdRouteImport } from './routes/credentials/$credentialId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -24,49 +29,122 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkflowsIndexRoute = WorkflowsIndexRouteImport.update({
+  id: '/workflows/',
+  path: '/workflows/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExecutionsIndexRoute = ExecutionsIndexRouteImport.update({
+  id: '/executions/',
+  path: '/executions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CredentialsIndexRoute = CredentialsIndexRouteImport.update({
+  id: '/credentials/',
+  path: '/credentials/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkflowsWorkflowRoute = WorkflowsWorkflowRouteImport.update({
+  id: '/workflows/$workflow',
+  path: '/workflows/$workflow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExecutionsExecutionIdRoute = ExecutionsExecutionIdRouteImport.update({
+  id: '/executions/$executionId',
+  path: '/executions/$executionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CredentialsCredentialIdRoute = CredentialsCredentialIdRouteImport.update({
+  id: '/credentials/$credentialId',
+  path: '/credentials/$credentialId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/credentials/$credentialId': typeof CredentialsCredentialIdRoute
+  '/executions/$executionId': typeof ExecutionsExecutionIdRoute
+  '/workflows/$workflow': typeof WorkflowsWorkflowRoute
+  '/credentials': typeof CredentialsIndexRoute
+  '/executions': typeof ExecutionsIndexRoute
+  '/workflows': typeof WorkflowsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/credentials/$credentialId': typeof CredentialsCredentialIdRoute
+  '/executions/$executionId': typeof ExecutionsExecutionIdRoute
+  '/workflows/$workflow': typeof WorkflowsWorkflowRoute
+  '/credentials': typeof CredentialsIndexRoute
+  '/executions': typeof ExecutionsIndexRoute
+  '/workflows': typeof WorkflowsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/credentials/$credentialId': typeof CredentialsCredentialIdRoute
+  '/executions/$executionId': typeof ExecutionsExecutionIdRoute
+  '/workflows/$workflow': typeof WorkflowsWorkflowRoute
+  '/credentials/': typeof CredentialsIndexRoute
+  '/executions/': typeof ExecutionsIndexRoute
+  '/workflows/': typeof WorkflowsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/login' | '/signup'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/credentials/$credentialId'
+    | '/executions/$executionId'
+    | '/workflows/$workflow'
+    | '/credentials'
+    | '/executions'
+    | '/workflows'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/login' | '/signup'
-  id: '__root__' | '/' | '/about' | '/login' | '/signup'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/credentials/$credentialId'
+    | '/executions/$executionId'
+    | '/workflows/$workflow'
+    | '/credentials'
+    | '/executions'
+    | '/workflows'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/credentials/$credentialId'
+    | '/executions/$executionId'
+    | '/workflows/$workflow'
+    | '/credentials/'
+    | '/executions/'
+    | '/workflows/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  CredentialsCredentialIdRoute: typeof CredentialsCredentialIdRoute
+  ExecutionsExecutionIdRoute: typeof ExecutionsExecutionIdRoute
+  WorkflowsWorkflowRoute: typeof WorkflowsWorkflowRoute
+  CredentialsIndexRoute: typeof CredentialsIndexRoute
+  ExecutionsIndexRoute: typeof ExecutionsIndexRoute
+  WorkflowsIndexRoute: typeof WorkflowsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,13 +163,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -99,14 +170,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workflows/': {
+      id: '/workflows/'
+      path: '/workflows'
+      fullPath: '/workflows'
+      preLoaderRoute: typeof WorkflowsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/executions/': {
+      id: '/executions/'
+      path: '/executions'
+      fullPath: '/executions'
+      preLoaderRoute: typeof ExecutionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credentials/': {
+      id: '/credentials/'
+      path: '/credentials'
+      fullPath: '/credentials'
+      preLoaderRoute: typeof CredentialsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workflows/$workflow': {
+      id: '/workflows/$workflow'
+      path: '/workflows/$workflow'
+      fullPath: '/workflows/$workflow'
+      preLoaderRoute: typeof WorkflowsWorkflowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/executions/$executionId': {
+      id: '/executions/$executionId'
+      path: '/executions/$executionId'
+      fullPath: '/executions/$executionId'
+      preLoaderRoute: typeof ExecutionsExecutionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credentials/$credentialId': {
+      id: '/credentials/$credentialId'
+      path: '/credentials/$credentialId'
+      fullPath: '/credentials/$credentialId'
+      preLoaderRoute: typeof CredentialsCredentialIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  CredentialsCredentialIdRoute: CredentialsCredentialIdRoute,
+  ExecutionsExecutionIdRoute: ExecutionsExecutionIdRoute,
+  WorkflowsWorkflowRoute: WorkflowsWorkflowRoute,
+  CredentialsIndexRoute: CredentialsIndexRoute,
+  ExecutionsIndexRoute: ExecutionsIndexRoute,
+  WorkflowsIndexRoute: WorkflowsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

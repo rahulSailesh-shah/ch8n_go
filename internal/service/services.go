@@ -1,16 +1,16 @@
 package service
 
 import (
-	"github.com/rahulSailesh-shah/ch8n_go/internal/repo"
+	"github.com/rahulSailesh-shah/ch8n_go/internal/db/repo"
 	"github.com/rahulSailesh-shah/ch8n_go/pkg/config"
 )
 
 type Service struct {
-	User UserService
+	Workflow WorkflowService
 }
 
-func NewService(repos *repo.Repositories, cfg *config.AppConfig) *Service {
+func NewService(queries *repo.Queries, cfg *config.AppConfig) *Service {
 	return &Service{
-		User: NewUserService(repos.User),
+		Workflow: NewWorkflowService(queries),
 	}
 }

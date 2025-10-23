@@ -17,16 +17,13 @@ type ServerConfig struct {
 type AppConfig struct {
 	DB       DBConfig
 	Server   ServerConfig
-	Token    TokenConfig
+	Auth     AuthConfig
 	LogLevel string
 	Env      string
 }
 
-type TokenConfig struct {
-	AccessSecret  string
-	RefreshSecret string
-	AccessTTL     int // in minutes
-	RefreshTTL    int // in minutes
+type AuthConfig struct {
+	JwksURL string
 }
 
 func LoadConfig() (*AppConfig, error) {
@@ -43,11 +40,8 @@ func LoadConfig() (*AppConfig, error) {
 			Port:                8080,
 			GracefulShutdownSec: 5,
 		},
-		Token: TokenConfig{
-			AccessSecret:  "4ciLqCmSvmtLywAsEla7RZMQpD01PqrOS2vAel2Ou/Q=",
-			RefreshSecret: "cDsr0GP0OWveYQKSZ1RdPMkQUHXzgK6izs8IjyEPk60=",
-			AccessTTL:     15,    // 15 minutes
-			RefreshTTL:    43200, // 30 days
+		Auth: AuthConfig{
+			JwksURL: "http://localhost:3000/api/auth/jwks",
 		},
 		LogLevel: "info",
 		Env:      "development",

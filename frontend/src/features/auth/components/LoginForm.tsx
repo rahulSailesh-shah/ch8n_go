@@ -62,8 +62,8 @@ const LoginForm = () => {
       if (error) {
         toast.error(error.message);
       }
-    } catch (error) {
-      toast.error("Something went wrong");
+    } catch {
+      toast.error("Something went wrong: ");
     }
   };
 
@@ -75,7 +75,7 @@ const LoginForm = () => {
         <CardHeader className="text-center">
           <CardTitle>Welcome back</CardTitle>
           <CardDescription>Enter your email below to login</CardDescription>
-          <CardContent>
+          <CardContent className="mt-4">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 <div className="grid gap-6">
@@ -86,6 +86,11 @@ const LoginForm = () => {
                       disabled={isPending}
                       className="w-full"
                     >
+                      <img
+                        src="/logos/google.svg"
+                        alt="Google"
+                        className="w-5 h-5"
+                      />
                       Continue with Google
                     </Button>
                     <Button
@@ -94,6 +99,11 @@ const LoginForm = () => {
                       disabled={isPending}
                       className="w-full"
                     >
+                      <img
+                        src="/logos/github.svg"
+                        alt="Github"
+                        className="w-5 h-5"
+                      />
                       Continue with Github
                     </Button>
                   </div>

@@ -1,14 +1,14 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "internal/db/queries"
+    queries: "internal/db/sql"
     schema: "pkg/database/migrations"
     gen:
       go:
-        package: "sqlc"
-        out: "internal/db/sqlc"
+        package: "repo"
+        out: "internal/db/repo"
         emit_json_tags: true
         emit_prepared_queries: false
-        emit_interface: true
-        emit_exact_table_names: false
+        emit_interface: false
+        emit_exact_table_names: true
         emit_empty_slices: true

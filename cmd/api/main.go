@@ -20,8 +20,8 @@ func main() {
 		panic(err)
 	}
 
-	server := server.NewServer(app)
-	if err := server.Run(ctx); err != nil {
+	server := server.NewServer(app, ctx)
+	if err := server.Run(); err != nil {
 		app.DB.Close()
 		panic(err)
 	}

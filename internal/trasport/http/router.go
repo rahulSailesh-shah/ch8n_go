@@ -5,15 +5,17 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/lestrrat-go/jwx/v3/jwk"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/service"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/trasport/http/handler"
+	"github.com/rahulSailesh-shah/ch8n_go/internal/trasport/http/middleware"
 )
 
-func RegisterRoutes(r *gin.Engine, service service.Service) {
+func RegisterRoutes(r *gin.Engine, service service.Service, authKeys jwk.Set) {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
-		AllowAllOrigins:  true,
+		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,
@@ -25,6 +27,12 @@ func RegisterRoutes(r *gin.Engine, service service.Service) {
 		})
 	})
 
-	userHandler := handler.NewUserHandler(service.User)
-	userHandler.RegisterRoutes(r)
+	protectedGroup := r.Group("")
+	protectedGroup.Use(middleware.AuthMiddleware(authKeys))
+	{
+		workflowHandler := handler.NewWorkflowHandler(service.Workflow)
+		workflowGroup := protectedGroup.Group("/workflows")
+		workflowGroup.POST("", workflowHandler.CreateWorkflow)
+		workflowGroup.GET("", workflowHandler.GetWorkflows)
+	}
 }

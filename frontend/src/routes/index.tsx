@@ -1,16 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/auth-utils";
-import { LogoutButton } from "@/features/auth/components/LogoutButton";
 
 export const Route = createFileRoute("/")({
-  beforeLoad: requireAuth,
+  beforeLoad: async () => {
+    await requireAuth();
+    throw redirect({ to: "/workflows" });
+  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  return (
-    <div>
-      <LogoutButton />
-    </div>
-  );
+  return <div></div>;
 }

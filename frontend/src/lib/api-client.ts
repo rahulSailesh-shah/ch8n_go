@@ -1,0 +1,99 @@
+import { jwtDecode } from "jwt-decode";
+import { authClient } from "./auth-client";
+
+export type APIResponse<T> = {
+  data?: T | null;
+  error: string | null;
+  status: number;
+};
+
+class ApiClient {
+  private readonly baseURL: string;
+  private readonly headers: Record<string, string>;
+  private cachedToken: string | null = null;
+
+  constructor(baseURL: string) {
+    this.baseURL = baseURL;
+    this.cachedToken = null;
+    this.headers = {
+      "Content-Type": "application/json",
+    };
+  }
+
+  private isTokenValid() {
+    if (!this.cachedToken) {
+      return false;
+    }
+
+    const decodedToken = jwtDecode(this.cachedToken);
+    if (!decodedToken.exp) {
+      return false;
+    }
+    const expirationTime = decodedToken.exp;
+    const currentTime = Date.now() / 1000;
+    return expirationTime > currentTime;
+  }
+
+  private async getToken() {
+    if (this.isTokenValid()) {
+      return this.cachedToken;
+    }
+
+    const { data, error } = await authClient.token();
+    if (error || !data?.token) {
+      return null;
+    }
+    this.cachedToken = data.token;
+    return data.token;
+  }
+
+  public async get<T>(url: string): Promise<APIResponse<T>> {
+    const token = await this.getToken();
+    if (!token) {
+      return {
+        error: "Failed to fetch token",
+        status: 401,
+        data: null,
+      };
+    }
+    const response = await fetch(`${this.baseURL}${url}`, {
+      headers: {
+        ...this.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    return {
+      data: data.data,
+      error: null,
+      status: response.status,
+    };
+  }
+
+  public async post<T>(url: string, body: any): Promise<APIResponse<T>> {
+    const token = await this.getToken();
+    if (!token) {
+      return {
+        error: "Failed to fetch token",
+        status: 401,
+        data: null,
+      };
+    }
+    const response = await fetch(`${this.baseURL}${url}`, {
+      method: "POST",
+      headers: {
+        ...this.headers,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    return {
+      data: data.data,
+      error: null,
+      status: response.status,
+    };
+  }
+}
+
+export const apiClient = new ApiClient("http://localhost:8080");

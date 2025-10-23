@@ -12,19 +12,26 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/app"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/trasport/http"
+	"github.com/rahulSailesh-shah/ch8n_go/pkg/auth"
 )
 
 type Server struct {
 	App        *app.App
+	ctx        context.Context
 	Engine     *gin.Engine
 	httpServer *httpSrv.Server
 }
 
-func NewServer(app *app.App) *Server {
+func NewServer(app *app.App, ctx context.Context) *Server {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
 
-	http.RegisterRoutes(engine, *app.Service)
+	authKeys, err := auth.LoadKeys(app.Config.Auth.JwksURL)
+	if err != nil {
+		panic(err)
+	}
+
+	http.RegisterRoutes(engine, *app.Service, authKeys)
 
 	srv := &httpSrv.Server{
 		Addr:    fmt.Sprintf(":%d", app.Config.Server.Port),
@@ -33,12 +40,13 @@ func NewServer(app *app.App) *Server {
 
 	return &Server{
 		App:        app,
+		ctx:        ctx,
 		Engine:     engine,
 		httpServer: srv,
 	}
 }
 
-func (s *Server) Run(ctx context.Context) error {
+func (s *Server) Run() error {
 	done := make(chan bool, 1)
 	go s.gracefulShutdown(done)
 
@@ -52,7 +60,7 @@ func (s *Server) Run(ctx context.Context) error {
 }
 
 func (s *Server) gracefulShutdown(done chan bool) {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(s.ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	<-ctx.Done()
@@ -61,7 +69,7 @@ func (s *Server) gracefulShutdown(done chan bool) {
 	stop()
 
 	timeout := time.Duration(s.App.Config.Server.GracefulShutdownSec) * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(s.ctx, timeout)
 	defer cancel()
 	if err := s.httpServer.Shutdown(ctx); err != nil {
 		log.Printf("Server forced to shutdown with error: %v", err)

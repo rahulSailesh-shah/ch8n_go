@@ -81,7 +81,7 @@ export const RegisterForm = () => {
         <CardHeader className="text-center">
           <CardTitle>Get started</CardTitle>
           <CardDescription>Create your account to get started</CardDescription>
-          <CardContent>
+          <CardContent className="mt-4">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 <div className="grid gap-6">
@@ -92,6 +92,11 @@ export const RegisterForm = () => {
                       disabled={isPending}
                       className="w-full"
                     >
+                      <img
+                        src="/logos/google.svg"
+                        alt="Google"
+                        className="w-5 h-5"
+                      />
                       Continue with Google
                     </Button>
                     <Button
@@ -100,6 +105,11 @@ export const RegisterForm = () => {
                       disabled={isPending}
                       className="w-full"
                     >
+                      <img
+                        src="/logos/github.svg"
+                        alt="Github"
+                        className="w-5 h-5"
+                      />
                       Continue with Github
                     </Button>
                   </div>
