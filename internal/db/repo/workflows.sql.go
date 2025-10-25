@@ -7,6 +7,7 @@ package repo
 
 import (
 	"context"
+	"time"
 )
 
 const createWorkflow = `-- name: CreateWorkflow :one
@@ -44,11 +45,16 @@ func (q *Queries) DeleteWorkflow(ctx context.Context, id int32) error {
 }
 
 const getWorkflowByID = `-- name: GetWorkflowByID :one
-SELECT id, user_id, name, description, created_at FROM workflow WHERE id = $1
+SELECT id, user_id, name, description, created_at FROM workflow WHERE id = $1 AND user_id = $2
 `
 
-func (q *Queries) GetWorkflowByID(ctx context.Context, id int32) (Workflow, error) {
-	row := q.db.QueryRowContext(ctx, getWorkflowByID, id)
+type GetWorkflowByIDParams struct {
+	ID     int32  `json:"id"`
+	UserID string `json:"user_id"`
+}
+
+func (q *Queries) GetWorkflowByID(ctx context.Context, arg GetWorkflowByIDParams) (Workflow, error) {
+	row := q.db.QueryRowContext(ctx, getWorkflowByID, arg.ID, arg.UserID)
 	var i Workflow
 	err := row.Scan(
 		&i.ID,
@@ -61,24 +67,51 @@ func (q *Queries) GetWorkflowByID(ctx context.Context, id int32) (Workflow, erro
 }
 
 const getWorkflowsByUserID = `-- name: GetWorkflowsByUserID :many
-SELECT id, user_id, name, description, created_at FROM workflow where user_id = $1
+SELECT id, name, description, user_id, created_at, COUNT(*) OVER() as total_count
+FROM workflow
+WHERE user_id = $1
+    AND (CASE WHEN $2::text != '' THEN name ILIKE '%' || $2 || '%' ELSE TRUE END)
+ORDER BY id
+LIMIT $3 OFFSET $4
 `
 
-func (q *Queries) GetWorkflowsByUserID(ctx context.Context, userID string) ([]Workflow, error) {
-	rows, err := q.db.QueryContext(ctx, getWorkflowsByUserID, userID)
+type GetWorkflowsByUserIDParams struct {
+	UserID  string `json:"user_id"`
+	Column2 string `json:"column_2"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetWorkflowsByUserIDRow struct {
+	ID          int32     `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	UserID      string    `json:"user_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	TotalCount  int64     `json:"total_count"`
+}
+
+func (q *Queries) GetWorkflowsByUserID(ctx context.Context, arg GetWorkflowsByUserIDParams) ([]GetWorkflowsByUserIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, getWorkflowsByUserID,
+		arg.UserID,
+		arg.Column2,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Workflow{}
+	items := []GetWorkflowsByUserIDRow{}
 	for rows.Next() {
-		var i Workflow
+		var i GetWorkflowsByUserIDRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.UserID,
 			&i.Name,
 			&i.Description,
+			&i.UserID,
 			&i.CreatedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}

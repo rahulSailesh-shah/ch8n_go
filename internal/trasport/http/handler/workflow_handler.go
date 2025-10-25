@@ -2,9 +2,9 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rahulSailesh-shah/ch8n_go/internal/db/repo"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/dto"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/service"
 )
@@ -30,7 +30,7 @@ func (h *WorkflowHandler) CreateWorkflow(c *gin.Context) {
 	}
 
 	workflow, err := h.workflowService.CreateWorkflow(c.Request.Context(),
-		&repo.Workflow{
+		&dto.CreateWorkflowRequest{
 			Name:        req.Name,
 			Description: req.Description,
 			UserID:      c.MustGet("user_id").(string),
@@ -49,8 +49,17 @@ func (h *WorkflowHandler) CreateWorkflow(c *gin.Context) {
 	})
 }
 
-func (h *WorkflowHandler) GetWorkflows(c *gin.Context) {
-	workflows, err := h.workflowService.GetWorkflowsByUserID(c.Request.Context(), c.MustGet("user_id").(string))
+func (h *WorkflowHandler) GetWorkflowsByUserID(c *gin.Context) {
+	search := c.DefaultQuery("search", "")
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+
+	workflows, err := h.workflowService.GetWorkflowsByUserID(c.Request.Context(), &dto.GetWorkflowsRequest{
+		Search: search,
+		Limit:  int32(limit),
+		Offset: int32(offset),
+		UserID: c.MustGet("user_id").(string),
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Message: "Failed to retrieve workflows",
@@ -61,5 +70,95 @@ func (h *WorkflowHandler) GetWorkflows(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.SuccessResponse{
 		Message: "Workflows retrieved successfully",
 		Data:    workflows,
+	})
+}
+
+func (h *WorkflowHandler) GetWorkflowByID(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid workflow ID",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	workflow, err := h.workflowService.GetWorkflowByID(c.Request.Context(), &dto.GetWorkflowByIDRequest{
+		ID:     int32(id),
+		UserID: c.MustGet("user_id").(string),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "Failed to retrieve workflow",
+			Error:   err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, dto.SuccessResponse{
+		Message: "Workflow retrieved successfully",
+		Data:    workflow,
+	})
+}
+
+func (h *WorkflowHandler) UpdateWorkflow(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid workflow ID",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	var req dto.UpdateWorkflowRequest
+	if err = c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid request",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	workflow, err := h.workflowService.UpdateWorkflow(c.Request.Context(), &dto.UpdateWorkflowRequest{
+		ID:          int32(id),
+		Name:        req.Name,
+		Description: req.Description,
+		UserID:      c.MustGet("user_id").(string),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "Failed to update workflow",
+			Error:   err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, dto.SuccessResponse{
+		Message: "Workflow updated successfully",
+		Data:    workflow,
+	})
+}
+
+func (h *WorkflowHandler) DeleteWorkflow(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid workflow ID",
+			Error:   err.Error(),
+		})
+		return
+	}
+	err = h.workflowService.DeleteWorkflow(c.Request.Context(), &dto.DeleteWorkflowRequest{
+		ID:     int32(id),
+		UserID: c.MustGet("user_id").(string),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "Failed to delete workflow",
+			Error:   err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, dto.SuccessResponse{
+		Message: "Workflow deleted successfully",
 	})
 }

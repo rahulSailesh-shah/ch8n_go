@@ -70,7 +70,7 @@ class ApiClient {
     };
   }
 
-  public async post<T>(url: string, body: any): Promise<APIResponse<T>> {
+  public async post<T>(url: string, body: unknown): Promise<APIResponse<T>> {
     const token = await this.getToken();
     if (!token) {
       return {
@@ -88,6 +88,9 @@ class ApiClient {
       body: JSON.stringify(body),
     });
     const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error);
+    }
     return {
       data: data.data,
       error: null,

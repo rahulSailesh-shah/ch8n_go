@@ -9,9 +9,10 @@ import (
 	"github.com/rahulSailesh-shah/ch8n_go/internal/service"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/trasport/http/handler"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/trasport/http/middleware"
+	"github.com/rahulSailesh-shah/ch8n_go/pkg/config"
 )
 
-func RegisterRoutes(r *gin.Engine, service service.Service, authKeys jwk.Set) {
+func RegisterRoutes(r *gin.Engine, service service.Service, authKeys jwk.Set, polarConfig *config.PolarConfig) {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
@@ -29,10 +30,14 @@ func RegisterRoutes(r *gin.Engine, service service.Service, authKeys jwk.Set) {
 
 	protectedGroup := r.Group("")
 	protectedGroup.Use(middleware.AuthMiddleware(authKeys))
+	protectedGroup.Use(middleware.SubscriptionMiddleware(polarConfig))
 	{
 		workflowHandler := handler.NewWorkflowHandler(service.Workflow)
 		workflowGroup := protectedGroup.Group("/workflows")
 		workflowGroup.POST("", workflowHandler.CreateWorkflow)
-		workflowGroup.GET("", workflowHandler.GetWorkflows)
+		workflowGroup.GET("", workflowHandler.GetWorkflowsByUserID)
+		workflowGroup.GET("/:id", workflowHandler.GetWorkflowByID)
+		workflowGroup.PUT("/:id", workflowHandler.UpdateWorkflow)
+		workflowGroup.DELETE("/:id", workflowHandler.DeleteWorkflow)
 	}
 }

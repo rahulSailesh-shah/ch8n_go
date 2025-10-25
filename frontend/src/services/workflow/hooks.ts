@@ -4,6 +4,7 @@ import {
   getWorkflows,
   type CreateWorkflowRequest,
 } from "./api";
+import { toast } from "sonner";
 
 export const useWorkflows = () => {
   return useQuery({
@@ -16,6 +17,9 @@ export const useCreateWorkflow = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (workflow: CreateWorkflowRequest) => createWorkflow(workflow),
+    onError: ({ message }) => {
+      toast.error(message);
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["workflows"] }),
   });
 };

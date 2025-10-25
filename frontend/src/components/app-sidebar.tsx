@@ -19,6 +19,7 @@ import {
 } from "./ui/sidebar";
 import { Link, useLocation, useRouter } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
+import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-subscription";
 
 const menuItems = [
   {
@@ -46,6 +47,7 @@ const menuItems = [
 const AppSideBar = () => {
   const { pathname } = useLocation();
   const router = useRouter();
+  const { hasActiveSubscription, isLoading } = useHasActiveSubscription();
 
   return (
     <Sidebar collapsible="icon">
@@ -76,7 +78,7 @@ const AppSideBar = () => {
                       asChild
                       className="gap-x-4 h-10 px-4"
                     >
-                      <Link to={item.url} preload="render">
+                      <Link to={item.url}>
                         <item.icon className="size-4" />
                         <span>{item.title}</span>
                       </Link>
@@ -90,21 +92,27 @@ const AppSideBar = () => {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Upgrade to Pro"
-              className="gap-x-4 h-10 px-4"
-              onClick={() => {}}
-            >
-              <StarIcon className="h-4 w-4" />
-              <span>Upgrade to Pro</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {!isLoading && !hasActiveSubscription && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                tooltip="Upgrade to Pro"
+                className="gap-x-4 h-10 px-4"
+                onClick={() =>
+                  authClient.checkout({
+                    slug: "ch8n",
+                  })
+                }
+              >
+                <StarIcon className="h-4 w-4" />
+                <span>Upgrade to Pro</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Billing Portal"
               className="gap-x-4 h-10 px-4"
-              onClick={() => {}}
+              onClick={() => authClient.customer.portal()}
             >
               <CreditCardIcon className="h-4 w-4" />
               <span>Billing Portal</span>

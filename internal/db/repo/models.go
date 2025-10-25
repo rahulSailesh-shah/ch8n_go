@@ -5,13 +5,13 @@
 package repo
 
 import (
-	"database/sql"
+	"time"
 )
 
 type Workflow struct {
-	ID          int32        `json:"id"`
-	UserID      string       `json:"user_id"`
-	Name        string       `json:"name"`
-	Description string       `json:"description"`
-	CreatedAt   sql.NullTime `json:"created_at"`
+	ID          int32     `json:"id"`
+	UserID      string    `json:"user_id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
 }

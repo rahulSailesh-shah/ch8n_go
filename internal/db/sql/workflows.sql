@@ -4,10 +4,15 @@ VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: GetWorkflowByID :one
-SELECT * FROM workflow WHERE id = $1;
+SELECT * FROM workflow WHERE id = $1 AND user_id = $2;
 
 -- name: GetWorkflowsByUserID :many
-SELECT * FROM workflow where user_id = $1;
+SELECT id, name, description, user_id, created_at, COUNT(*) OVER() as total_count
+FROM workflow
+WHERE user_id = $1
+    AND (CASE WHEN $2::text != '' THEN name ILIKE '%' || $2 || '%' ELSE TRUE END)
+ORDER BY id
+LIMIT $3 OFFSET $4;
 
 -- name: ListWorkflows :many
 SELECT * FROM workflow ORDER BY id;
