@@ -2,10 +2,19 @@ import { jwtDecode } from "jwt-decode";
 import { authClient } from "./auth-client";
 
 export type APIResponse<T> = {
-  data?: T | null;
+  data: T | null;
   error: string | null;
   status: number;
 };
+
+export class ApiError extends Error {
+  public status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
 
 class ApiClient {
   private readonly baseURL: string;
@@ -63,6 +72,13 @@ class ApiClient {
       },
     });
     const data = await response.json();
+    if (!response.ok) {
+      return {
+        error: data.error || data.message || "Failed to fetch data",
+        status: response.status,
+        data: null,
+      };
+    }
     return {
       data: data.data,
       error: null,
@@ -89,7 +105,11 @@ class ApiClient {
     });
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.error);
+      return {
+        error: data.error || data.message || "Request failed",
+        status: response.status,
+        data: null,
+      };
     }
     return {
       data: data.data,

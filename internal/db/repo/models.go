@@ -10,8 +10,8 @@ import (
 
 type Workflow struct {
 	ID          int32     `json:"id"`
-	UserID      string    `json:"user_id"`
+	UserID      string    `json:"userId"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
+	CreatedAt   time.Time `json:"createdAt"`
 }

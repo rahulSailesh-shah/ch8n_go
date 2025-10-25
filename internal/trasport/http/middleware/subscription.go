@@ -22,7 +22,7 @@ func SubscriptionMiddleware(polar *config.PolarConfig) gin.HandlerFunc {
 			return
 		}
 		if res.CustomerState == nil || len(res.CustomerState.ActiveSubscriptions) == 0 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "No active subscription found. Please upgrade to a pro plan"})
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "No active subscription found. Please upgrade to a pro plan"})
 			return
 		}
 		c.Next()

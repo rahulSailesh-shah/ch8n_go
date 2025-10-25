@@ -19,7 +19,7 @@ RETURNING id, user_id, name, description, created_at
 type CreateWorkflowParams struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	UserID      string `json:"user_id"`
+	UserID      string `json:"userId"`
 }
 
 func (q *Queries) CreateWorkflow(ctx context.Context, arg CreateWorkflowParams) (Workflow, error) {
@@ -50,7 +50,7 @@ SELECT id, user_id, name, description, created_at FROM workflow WHERE id = $1 AN
 
 type GetWorkflowByIDParams struct {
 	ID     int32  `json:"id"`
-	UserID string `json:"user_id"`
+	UserID string `json:"userId"`
 }
 
 func (q *Queries) GetWorkflowByID(ctx context.Context, arg GetWorkflowByIDParams) (Workflow, error) {
@@ -76,8 +76,8 @@ LIMIT $3 OFFSET $4
 `
 
 type GetWorkflowsByUserIDParams struct {
-	UserID  string `json:"user_id"`
-	Column2 string `json:"column_2"`
+	UserID  string `json:"userId"`
+	Column2 string `json:"column2"`
 	Limit   int32  `json:"limit"`
 	Offset  int32  `json:"offset"`
 }
@@ -86,9 +86,9 @@ type GetWorkflowsByUserIDRow struct {
 	ID          int32     `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	UserID      string    `json:"user_id"`
-	CreatedAt   time.Time `json:"created_at"`
-	TotalCount  int64     `json:"total_count"`
+	UserID      string    `json:"userId"`
+	CreatedAt   time.Time `json:"createdAt"`
+	TotalCount  int64     `json:"totalCount"`
 }
 
 func (q *Queries) GetWorkflowsByUserID(ctx context.Context, arg GetWorkflowsByUserIDParams) ([]GetWorkflowsByUserIDRow, error) {

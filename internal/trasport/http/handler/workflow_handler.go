@@ -28,13 +28,8 @@ func (h *WorkflowHandler) CreateWorkflow(c *gin.Context) {
 		})
 		return
 	}
-
-	workflow, err := h.workflowService.CreateWorkflow(c.Request.Context(),
-		&dto.CreateWorkflowRequest{
-			Name:        req.Name,
-			Description: req.Description,
-			UserID:      c.MustGet("user_id").(string),
-		})
+	req.UserID = c.MustGet("user_id").(string)
+	workflow, err := h.workflowService.CreateWorkflow(c.Request.Context(), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Message: "Failed to create workflow",
@@ -119,12 +114,9 @@ func (h *WorkflowHandler) UpdateWorkflow(c *gin.Context) {
 		return
 	}
 
-	workflow, err := h.workflowService.UpdateWorkflow(c.Request.Context(), &dto.UpdateWorkflowRequest{
-		ID:          int32(id),
-		Name:        req.Name,
-		Description: req.Description,
-		UserID:      c.MustGet("user_id").(string),
-	})
+	req.UserID = c.MustGet("user_id").(string)
+	req.ID = int32(id)
+	workflow, err := h.workflowService.UpdateWorkflow(c.Request.Context(), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Message: "Failed to update workflow",
