@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +10,6 @@ import (
 
 func SubscriptionMiddleware(polar *config.PolarConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Printf("jhwbifb %s", polar.AccessToken)
 		s := polargo.New(
 			polargo.WithServer("sandbox"),
 			polargo.WithSecurity(polar.AccessToken),

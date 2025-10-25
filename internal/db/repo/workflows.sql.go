@@ -13,17 +13,17 @@ import (
 const createWorkflow = `-- name: CreateWorkflow :one
 INSERT INTO workflow (name, description, user_id)
 VALUES ($1, $2, $3)
-RETURNING id, user_id, name, description, created_at
+RETURNING id, user_id, name, description, created_at, updated_at
 `
 
 type CreateWorkflowParams struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	UserID      string `json:"userId"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	UserID      string  `json:"userId"`
 }
 
 func (q *Queries) CreateWorkflow(ctx context.Context, arg CreateWorkflowParams) (Workflow, error) {
-	row := q.db.QueryRowContext(ctx, createWorkflow, arg.Name, arg.Description, arg.UserID)
+	row := q.db.QueryRow(ctx, createWorkflow, arg.Name, arg.Description, arg.UserID)
 	var i Workflow
 	err := row.Scan(
 		&i.ID,
@@ -31,6 +31,7 @@ func (q *Queries) CreateWorkflow(ctx context.Context, arg CreateWorkflowParams) 
 		&i.Name,
 		&i.Description,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -40,12 +41,12 @@ DELETE FROM workflow WHERE id = $1
 `
 
 func (q *Queries) DeleteWorkflow(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteWorkflow, id)
+	_, err := q.db.Exec(ctx, deleteWorkflow, id)
 	return err
 }
 
 const getWorkflowByID = `-- name: GetWorkflowByID :one
-SELECT id, user_id, name, description, created_at FROM workflow WHERE id = $1 AND user_id = $2
+SELECT id, user_id, name, description, created_at, updated_at FROM workflow WHERE id = $1 AND user_id = $2
 `
 
 type GetWorkflowByIDParams struct {
@@ -54,7 +55,7 @@ type GetWorkflowByIDParams struct {
 }
 
 func (q *Queries) GetWorkflowByID(ctx context.Context, arg GetWorkflowByIDParams) (Workflow, error) {
-	row := q.db.QueryRowContext(ctx, getWorkflowByID, arg.ID, arg.UserID)
+	row := q.db.QueryRow(ctx, getWorkflowByID, arg.ID, arg.UserID)
 	var i Workflow
 	err := row.Scan(
 		&i.ID,
@@ -62,6 +63,7 @@ func (q *Queries) GetWorkflowByID(ctx context.Context, arg GetWorkflowByIDParams
 		&i.Name,
 		&i.Description,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -71,7 +73,7 @@ SELECT id, name, description, user_id, created_at, COUNT(*) OVER() as total_coun
 FROM workflow
 WHERE user_id = $1
     AND (CASE WHEN $2::text != '' THEN name ILIKE '%' || $2 || '%' ELSE TRUE END)
-ORDER BY id
+ORDER BY updated_at DESC
 LIMIT $3 OFFSET $4
 `
 
@@ -85,14 +87,14 @@ type GetWorkflowsByUserIDParams struct {
 type GetWorkflowsByUserIDRow struct {
 	ID          int32     `json:"id"`
 	Name        string    `json:"name"`
-	Description string    `json:"description"`
+	Description *string   `json:"description"`
 	UserID      string    `json:"userId"`
 	CreatedAt   time.Time `json:"createdAt"`
 	TotalCount  int64     `json:"totalCount"`
 }
 
 func (q *Queries) GetWorkflowsByUserID(ctx context.Context, arg GetWorkflowsByUserIDParams) ([]GetWorkflowsByUserIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, getWorkflowsByUserID,
+	rows, err := q.db.Query(ctx, getWorkflowsByUserID,
 		arg.UserID,
 		arg.Column2,
 		arg.Limit,
@@ -117,9 +119,6 @@ func (q *Queries) GetWorkflowsByUserID(ctx context.Context, arg GetWorkflowsByUs
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -127,11 +126,11 @@ func (q *Queries) GetWorkflowsByUserID(ctx context.Context, arg GetWorkflowsByUs
 }
 
 const listWorkflows = `-- name: ListWorkflows :many
-SELECT id, user_id, name, description, created_at FROM workflow ORDER BY id
+SELECT id, user_id, name, description, created_at, updated_at FROM workflow ORDER BY updated_at DESC
 `
 
 func (q *Queries) ListWorkflows(ctx context.Context) ([]Workflow, error) {
-	rows, err := q.db.QueryContext(ctx, listWorkflows)
+	rows, err := q.db.Query(ctx, listWorkflows)
 	if err != nil {
 		return nil, err
 	}
@@ -145,13 +144,11 @@ func (q *Queries) ListWorkflows(ctx context.Context) ([]Workflow, error) {
 			&i.Name,
 			&i.Description,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -163,17 +160,17 @@ const updateWorkflow = `-- name: UpdateWorkflow :one
 UPDATE workflow
 SET name = $2, description = $3, updated_at = NOW()
 WHERE id = $1
-RETURNING id, user_id, name, description, created_at
+RETURNING id, user_id, name, description, created_at, updated_at
 `
 
 type UpdateWorkflowParams struct {
-	ID          int32  `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          int32   `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
 }
 
 func (q *Queries) UpdateWorkflow(ctx context.Context, arg UpdateWorkflowParams) (Workflow, error) {
-	row := q.db.QueryRowContext(ctx, updateWorkflow, arg.ID, arg.Name, arg.Description)
+	row := q.db.QueryRow(ctx, updateWorkflow, arg.ID, arg.Name, arg.Description)
 	var i Workflow
 	err := row.Scan(
 		&i.ID,
@@ -181,6 +178,7 @@ func (q *Queries) UpdateWorkflow(ctx context.Context, arg UpdateWorkflowParams) 
 		&i.Name,
 		&i.Description,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

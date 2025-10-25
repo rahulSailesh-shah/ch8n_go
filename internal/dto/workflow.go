@@ -1,13 +1,15 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/rahulSailesh-shah/ch8n_go/internal/db/repo"
 )
 
 type CreateWorkflowRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	UserID      string `json:"-"`
+	Name        string  `json:"name" binding:"required"`
+	Description *string `json:"description,omitempty"`
+	UserID      string  `json:"-"`
 }
 
 type UpdateWorkflowRequest struct {
@@ -44,9 +46,10 @@ type PaginatedWorkflowsResponse struct {
 }
 
 type WorkflowResponse struct {
-	ID          int32  `json:"id"`
-	UserID      string `json:"userId"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	CreatedAt   string `json:"createdAt"`
+	ID          int32     `json:"id"`
+	UserID      string    `json:"userId"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }

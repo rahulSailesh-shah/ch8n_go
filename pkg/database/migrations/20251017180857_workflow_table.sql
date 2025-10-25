@@ -5,9 +5,10 @@ CREATE TABLE IF NOT EXISTS workflow (
     id SERIAL PRIMARY KEY,
     user_id VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
-    description VARCHAR(255) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
+    description VARCHAR(255),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 -- +goose StatementEnd
 
 -- +goose Down

@@ -10,7 +10,7 @@ export const useWorkflows = () => {
   return useQuery({
     queryKey: ["workflows"],
     queryFn: () => getWorkflows(),
-    retry: 1,
+    retry: 0,
   });
 };
 

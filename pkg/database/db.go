@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jmoiron/sqlx"
-
+	"github.com/jackc/pgx/v5"
 	_ "github.com/lib/pq"
 	cfg "github.com/rahulSailesh-shah/ch8n_go/pkg/config"
 )
@@ -14,12 +13,12 @@ import (
 type DB interface {
 	Close() error
 	Connect() error
-	GetDB() *sqlx.DB
+	GetDB() *pgx.Conn
 }
 
 type db struct {
 	ctx context.Context
-	db  *sqlx.DB
+	db  *pgx.Conn
 	cfg cfg.DBConfig
 }
 
@@ -31,7 +30,7 @@ func NewDB(ctx context.Context, cfg cfg.DBConfig) DB {
 	}
 }
 
-func (d *db) GetDB() *sqlx.DB {
+func (d *db) GetDB() *pgx.Conn {
 	return d.db
 }
 
@@ -40,14 +39,14 @@ func (d *db) Close() error {
 	if d.db == nil {
 		return fmt.Errorf("database connection is already closed")
 	}
-	return d.db.Close()
+	return d.db.Close(d.ctx)
 }
 
 func (d *db) Connect() error {
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		d.cfg.User, d.cfg.Password, d.cfg.Host, d.cfg.Port, d.cfg.Name)
 
-	db, err := sqlx.ConnectContext(d.ctx, d.cfg.Driver, dsn)
+	db, err := pgx.Connect(d.ctx, dsn)
 	if err != nil {
 		return err
 	}

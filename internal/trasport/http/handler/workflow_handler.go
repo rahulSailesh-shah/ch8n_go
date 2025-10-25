@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -29,6 +30,9 @@ func (h *WorkflowHandler) CreateWorkflow(c *gin.Context) {
 		return
 	}
 	req.UserID = c.MustGet("user_id").(string)
+
+	fmt.Println(req.UserID)
+
 	workflow, err := h.workflowService.CreateWorkflow(c.Request.Context(), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
@@ -47,12 +51,12 @@ func (h *WorkflowHandler) CreateWorkflow(c *gin.Context) {
 func (h *WorkflowHandler) GetWorkflowsByUserID(c *gin.Context) {
 	search := c.DefaultQuery("search", "")
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 
 	workflows, err := h.workflowService.GetWorkflowsByUserID(c.Request.Context(), &dto.GetWorkflowsRequest{
 		Search: search,
 		Limit:  int32(limit),
-		Offset: int32(offset),
+		Offset: int32((page - 1) * limit),
 		UserID: c.MustGet("user_id").(string),
 	})
 	if err != nil {

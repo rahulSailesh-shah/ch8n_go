@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 const RegisterSchema = z
   .object({
     email: z.string().email(),
-    password: z.string().min(6),
+    password: z.string().min(8),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -68,9 +68,11 @@ export const RegisterForm = () => {
         }
       );
       if (error) {
-        toast.error(error.message);
+        toast.error(error?.message || "Failed to register user");
       }
-    } catch (error) {}
+    } catch (error) {
+      toast.error((error as Error)?.message || "Failed to register user");
+    }
   };
 
   const isPending = form.formState.isSubmitting;

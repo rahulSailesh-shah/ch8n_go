@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"time"
 
 	"github.com/rahulSailesh-shah/ch8n_go/internal/db/repo"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/dto"
@@ -104,7 +103,7 @@ func (s *workflowService) UpdateWorkflow(ctx context.Context, req *dto.UpdateWor
 
 	description := currentWorkflow.Description
 	if req.Description != nil && *req.Description != "" {
-		description = *req.Description
+		description = req.Description
 	}
 
 	updatedWorkflow, err := s.queries.UpdateWorkflow(ctx, repo.UpdateWorkflowParams{
@@ -139,6 +138,7 @@ func toWorkflowResponse(w *repo.Workflow) *dto.WorkflowResponse {
 		UserID:      w.UserID,
 		Name:        w.Name,
 		Description: w.Description,
-		CreatedAt:   w.CreatedAt.Format(time.RFC3339),
+		CreatedAt:   w.CreatedAt,
+		UpdatedAt:   w.UpdatedAt,
 	}
 }

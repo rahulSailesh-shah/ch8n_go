@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input";
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(8),
 });
 
 type LoginSchema = z.infer<typeof loginSchema>;

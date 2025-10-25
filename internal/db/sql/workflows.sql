@@ -11,11 +11,13 @@ SELECT id, name, description, user_id, created_at, COUNT(*) OVER() as total_coun
 FROM workflow
 WHERE user_id = $1
     AND (CASE WHEN $2::text != '' THEN name ILIKE '%' || $2 || '%' ELSE TRUE END)
-ORDER BY id
+ORDER BY updated_at DESC
 LIMIT $3 OFFSET $4;
 
 -- name: ListWorkflows :many
-SELECT * FROM workflow ORDER BY id;
+SELECT * FROM workflow ORDER BY updated_at DESC;
+
+
 
 -- name: UpdateWorkflow :one
 UPDATE workflow
