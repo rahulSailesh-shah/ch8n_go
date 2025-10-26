@@ -1,16 +1,26 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import {
   createWorkflow,
   getWorkflows,
   type CreateWorkflowRequest,
-} from "./api";
+} from "../api";
 import { toast } from "sonner";
+import { useSearch } from "@tanstack/react-router";
 
-export const useWorkflows = () => {
+export const useQueryWorkflows = () => {
+  const search = useSearch({
+    from: "/_authenticated/workflows/",
+  });
   return useQuery({
-    queryKey: ["workflows"],
-    queryFn: () => getWorkflows(),
+    queryKey: ["workflows", search],
+    queryFn: () => getWorkflows(search),
     retry: 0,
+    placeholderData: keepPreviousData,
   });
 };
 

@@ -56,7 +56,10 @@ class ApiClient {
     return data.token;
   }
 
-  public async get<T>(url: string): Promise<APIResponse<T>> {
+  public async get<T>(
+    url: string,
+    params?: Record<string, string | number | boolean | undefined>
+  ): Promise<APIResponse<T>> {
     const token = await this.getToken();
     if (!token) {
       return {
@@ -65,13 +68,33 @@ class ApiClient {
         data: null,
       };
     }
-    const response = await fetch(`${this.baseURL}${url}`, {
+
+    let fullUrl = `${this.baseURL}${url}`;
+
+    if (params && Object.keys(params).length > 0) {
+      const searchParams = new URLSearchParams();
+
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          searchParams.append(key, String(value)); // Convert to string here
+        }
+      });
+
+      const queryString = searchParams.toString();
+      if (queryString) {
+        fullUrl += `?${queryString}`;
+      }
+    }
+
+    const response = await fetch(fullUrl, {
       headers: {
         ...this.headers,
         Authorization: `Bearer ${token}`,
       },
     });
+
     const data = await response.json();
+
     if (!response.ok) {
       return {
         error: data.error || data.message || "Failed to fetch data",
@@ -79,6 +102,7 @@ class ApiClient {
         data: null,
       };
     }
+
     return {
       data: data.data,
       error: null,

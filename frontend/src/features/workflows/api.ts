@@ -1,4 +1,5 @@
 import { apiClient, ApiError } from "@/lib/api-client";
+import type { WorkflowSearchParams } from "@/routes/_authenticated/workflows";
 
 export interface CreateWorkflowRequest {
   name: string;
@@ -39,9 +40,9 @@ export const createWorkflow = async (workflow: CreateWorkflowRequest) => {
   return data;
 };
 
-export const getWorkflows = async () => {
+export const getWorkflows = async (params: WorkflowSearchParams) => {
   const { data, error, status } =
-    await apiClient.get<PaginatedWorkflowResponse>("/workflows");
+    await apiClient.get<PaginatedWorkflowResponse>("/workflows", params);
   if (error) {
     throw new ApiError(error, status);
   }

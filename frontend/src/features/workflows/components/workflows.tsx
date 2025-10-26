@@ -1,11 +1,18 @@
-import { EntityContainer, EntityHeader } from "@/components/entity-component";
+import {
+  EntityContainer,
+  EntityHeader,
+  EntityPagination,
+  EntitySearch,
+} from "@/components/entity-component";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
-import { useCreateWorkflow, useWorkflows } from "@/services/workflow/hooks";
-import { useRouter } from "@tanstack/react-router";
+import { useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useCreateWorkflow, useQueryWorkflows } from "../hooks/use-workflows";
+import { useEntitySearch } from "@/hooks/use-entity-search";
+import { Route } from "@/routes/_authenticated/workflows";
 
 export const WorkflowsList = () => {
-  const { data: workflows, isLoading, isError, error } = useWorkflows();
+  const { data: workflows, isLoading, isError, error } = useQueryWorkflows();
 
   if (isLoading) {
     return <div className="bg-accent/20">Loading...</div>;
@@ -45,7 +52,7 @@ export const WorkflowsHeader = ({ disabled }: { disabled?: boolean }) => {
   const handleCreateWorkflow = () => {
     createWorkflow.mutate(
       {
-        name: "komromro",
+        name: "rahul",
         description: "mkowmow",
       },
       {
@@ -75,12 +82,56 @@ export const WorkflowsHeader = ({ disabled }: { disabled?: boolean }) => {
   );
 };
 
+export const WorkflowsSearch = () => {
+  const search = useSearch({
+    from: "/_authenticated/workflows/",
+  });
+  const navigate = useNavigate({
+    from: Route.fullPath,
+  });
+  const { searchValue, onSearchChange } = useEntitySearch({
+    params: search,
+    setParams: (params) => navigate({ search: params }),
+  });
+  return (
+    <EntitySearch
+      value={searchValue}
+      onSearch={onSearchChange}
+      placeholder="Search workflows"
+    />
+  );
+};
+
+export const WorkflowsPagination = () => {
+  const { data: workflows, isLoading } = useQueryWorkflows();
+  const totalPages = workflows?.totalPages || 1;
+
+  const search = useSearch({
+    from: "/_authenticated/workflows/",
+  });
+  const navigate = useNavigate({
+    from: Route.fullPath,
+  });
+
+  return (
+    <EntityPagination
+      page={search.page}
+      totalPages={totalPages}
+      onPageChange={(page: number) => {
+        console.log(page);
+        navigate({ search: { ...search, page } });
+      }}
+      disabled={isLoading}
+    />
+  );
+};
+
 export const WorkflowsContainer = ({ children }: { children: ReactNode }) => {
   return (
     <EntityContainer
       header={<WorkflowsHeader />}
-      search={<></>}
-      pagination={<></>}
+      search={<WorkflowsSearch />}
+      pagination={<WorkflowsPagination />}
     >
       {children}
     </EntityContainer>
