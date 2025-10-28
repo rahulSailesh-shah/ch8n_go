@@ -141,6 +141,69 @@ class ApiClient {
       status: response.status,
     };
   }
+
+  public async delete(url: string): Promise<APIResponse<void>> {
+    const token = await this.getToken();
+    if (!token) {
+      return {
+        error: "Failed to fetch token",
+        status: 401,
+        data: null,
+      };
+    }
+    const response = await fetch(`${this.baseURL}${url}`, {
+      method: "DELETE",
+      headers: {
+        ...this.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return {
+        error: data.error || data.message || "Request failed",
+        status: response.status,
+        data: null,
+      };
+    }
+    return {
+      data: null,
+      error: null,
+      status: response.status,
+    };
+  }
+
+  public async put<T>(url: string, body: unknown): Promise<APIResponse<T>> {
+    const token = await this.getToken();
+    if (!token) {
+      return {
+        error: "Failed to fetch token",
+        status: 401,
+        data: null,
+      };
+    }
+    const response = await fetch(`${this.baseURL}${url}`, {
+      method: "PUT",
+      headers: {
+        ...this.headers,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return {
+        error: data.error || data.message || "Request failed",
+        status: response.status,
+        data: null,
+      };
+    }
+    return {
+      data: data.data,
+      error: null,
+      status: response.status,
+    };
+  }
 }
 
 export const apiClient = new ApiClient("http://localhost:8080");

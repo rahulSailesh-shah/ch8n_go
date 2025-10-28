@@ -60,6 +60,7 @@ func (s *workflowService) GetWorkflowsByUserID(ctx context.Context, req *dto.Get
 			Name:        row.Name,
 			Description: row.Description,
 			CreatedAt:   row.CreatedAt,
+			UpdatedAt:   row.UpdatedAt,
 		})
 	}
 

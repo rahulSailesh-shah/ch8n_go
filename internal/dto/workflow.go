@@ -13,8 +13,8 @@ type CreateWorkflowRequest struct {
 }
 
 type UpdateWorkflowRequest struct {
-	UserID      string  `json:"userId" validate:"required"`
-	ID          int32   `json:"id" validate:"required"`
+	UserID      string  `json:"-"`
+	ID          int32   `json:"-"`
 	Name        *string `json:"name,omitempty" validate:"omitempty,min=3,max=100"`
 	Description *string `json:"description,omitempty" validate:"omitempty,max=500"`
 }

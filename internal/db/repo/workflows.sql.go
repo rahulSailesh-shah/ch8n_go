@@ -69,7 +69,7 @@ func (q *Queries) GetWorkflowByID(ctx context.Context, arg GetWorkflowByIDParams
 }
 
 const getWorkflowsByUserID = `-- name: GetWorkflowsByUserID :many
-SELECT id, name, description, user_id, created_at, COUNT(*) OVER() as total_count
+SELECT id, name, description, user_id, created_at, updated_at, COUNT(*) OVER() as total_count
 FROM workflow
 WHERE user_id = $1
     AND (CASE WHEN $2::text != '' THEN name ILIKE '%' || $2 || '%' ELSE TRUE END)
@@ -90,6 +90,7 @@ type GetWorkflowsByUserIDRow struct {
 	Description *string   `json:"description"`
 	UserID      string    `json:"userId"`
 	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 	TotalCount  int64     `json:"totalCount"`
 }
 
@@ -113,6 +114,7 @@ func (q *Queries) GetWorkflowsByUserID(ctx context.Context, arg GetWorkflowsByUs
 			&i.Description,
 			&i.UserID,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 			&i.TotalCount,
 		); err != nil {
 			return nil, err

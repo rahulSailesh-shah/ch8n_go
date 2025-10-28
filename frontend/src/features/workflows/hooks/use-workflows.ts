@@ -6,8 +6,12 @@ import {
 } from "@tanstack/react-query";
 import {
   createWorkflow,
+  deleteWorkflow,
+  getWorkflow,
   getWorkflows,
+  updateWorkflow,
   type CreateWorkflowRequest,
+  type UpdateWorkflowRequest,
 } from "../api";
 import { toast } from "sonner";
 import { useSearch } from "@tanstack/react-router";
@@ -24,6 +28,14 @@ export const useQueryWorkflows = () => {
   });
 };
 
+export const useQueryWorkflow = (id: string) => {
+  return useQuery({
+    queryKey: ["workflow", id],
+    queryFn: () => getWorkflow(id),
+    retry: 0,
+  });
+};
+
 export const useCreateWorkflow = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -31,6 +43,45 @@ export const useCreateWorkflow = () => {
     onSuccess: (workflow) => {
       toast.success(`Workflow ${workflow?.name} created`);
       queryClient.invalidateQueries({ queryKey: ["workflows"] });
+    },
+    onError: ({ message }) => {
+      toast.error(message);
+    },
+  });
+};
+
+export const useDeleteWorkflow = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteWorkflow(id),
+    onSuccess: () => {
+      toast.success(`Workflow deleted`);
+      queryClient.invalidateQueries({ queryKey: ["workflows"] });
+    },
+    onError: ({ message }) => {
+      toast.error(message);
+    },
+  });
+};
+
+export const useUpdateWorkflow = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      workflow,
+    }: {
+      id: string;
+      workflow: UpdateWorkflowRequest;
+    }) => updateWorkflow(id, workflow),
+    onSuccess: (workflow, variables) => {
+      toast.success(`Workflow ${workflow?.name} updated`);
+      queryClient.invalidateQueries({
+        queryKey: ["workflow", variables.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workflows"],
+      });
     },
     onError: ({ message }) => {
       toast.error(message);

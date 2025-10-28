@@ -1,3 +1,4 @@
+import AppHeader from "@/components/app-header";
 import {
   WorkflowsContainer,
   WorkflowsList,
@@ -7,7 +8,7 @@ import { z } from "zod";
 
 const workflowSearchSchema = z.object({
   page: z.number().int().positive().catch(1),
-  limit: z.number().int().positive().catch(1),
+  limit: z.number().int().positive().catch(5),
   search: z.string().catch(""),
 });
 
@@ -20,10 +21,13 @@ export const Route = createFileRoute("/_authenticated/workflows/")({
 
 function RouteComponent() {
   return (
-    <WorkflowsContainer>
+    <>
+      <AppHeader />
       <main className="flex-1">
-        <WorkflowsList />
+        <WorkflowsContainer>
+          <WorkflowsList />
+        </WorkflowsContainer>
       </main>
-    </WorkflowsContainer>
+    </>
   );
 }

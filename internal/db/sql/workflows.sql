@@ -7,7 +7,7 @@ RETURNING *;
 SELECT * FROM workflow WHERE id = $1 AND user_id = $2;
 
 -- name: GetWorkflowsByUserID :many
-SELECT id, name, description, user_id, created_at, COUNT(*) OVER() as total_count
+SELECT id, name, description, user_id, created_at, updated_at, COUNT(*) OVER() as total_count
 FROM workflow
 WHERE user_id = $1
     AND (CASE WHEN $2::text != '' THEN name ILIKE '%' || $2 || '%' ELSE TRUE END)
