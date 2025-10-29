@@ -5,8 +5,31 @@
 package repo
 
 import (
+	"encoding/json"
 	"time"
 )
+
+type Connection struct {
+	ID           int32     `json:"id"`
+	WorkflowID   int32     `json:"workflowId"`
+	SourceNodeID int32     `json:"sourceNodeId"`
+	TargetNodeID int32     `json:"targetNodeId"`
+	FromOutput   string    `json:"fromOutput"`
+	ToInput      string    `json:"toInput"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+}
+
+type Node struct {
+	ID         int32           `json:"id"`
+	WorkflowID int32           `json:"workflowId"`
+	Name       string          `json:"name"`
+	Type       string          `json:"type"`
+	Position   json.RawMessage `json:"position"`
+	Data       json.RawMessage `json:"data"`
+	CreatedAt  time.Time       `json:"createdAt"`
+	UpdatedAt  time.Time       `json:"updatedAt"`
+}
 
 type Workflow struct {
 	ID          int32     `json:"id"`

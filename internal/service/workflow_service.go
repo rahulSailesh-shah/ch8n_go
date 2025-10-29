@@ -34,7 +34,16 @@ func (s *workflowService) CreateWorkflow(ctx context.Context, workflow *dto.Crea
 	if err != nil {
 		return nil, err
 	}
-	return toWorkflowResponse(&newWorkflow), nil
+	node, err := s.queries.CreateNode(ctx, repo.CreateNodeParams{
+		WorkflowID: newWorkflow.ID,
+		Name:       string(dto.NodeTypeInitial),
+		Type:       string(dto.NodeTypeInitial),
+		Position:   []byte(`{"x": 0, "y": 0}`),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return toWorkflowResponse(&newWorkflow, []repo.Node{node}, []repo.Connection{}), nil
 }
 
 func (s *workflowService) GetWorkflowsByUserID(ctx context.Context, req *dto.GetWorkflowsRequest) (*dto.PaginatedWorkflowsResponse, error) {
@@ -85,7 +94,17 @@ func (s *workflowService) GetWorkflowByID(ctx context.Context, req *dto.GetWorkf
 	if err != nil {
 		return nil, err
 	}
-	return toWorkflowResponse(&workflow), nil
+
+	nodes, err := s.queries.GetNodesByWorkflowID(ctx, workflow.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	edges, err := s.queries.GetConnectionsByWorkflowID(ctx, workflow.ID)
+	if err != nil {
+		return nil, err
+	}
+	return toWorkflowResponse(&workflow, nodes, edges), nil
 }
 
 func (s *workflowService) UpdateWorkflow(ctx context.Context, req *dto.UpdateWorkflowRequest) (*dto.WorkflowResponse, error) {
@@ -115,7 +134,18 @@ func (s *workflowService) UpdateWorkflow(ctx context.Context, req *dto.UpdateWor
 	if err != nil {
 		return nil, err
 	}
-	return toWorkflowResponse(&updatedWorkflow), nil
+
+	nodes, err := s.queries.GetNodesByWorkflowID(ctx, updatedWorkflow.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	edges, err := s.queries.GetConnectionsByWorkflowID(ctx, updatedWorkflow.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return toWorkflowResponse(&updatedWorkflow, nodes, edges), nil
 }
 
 func (s *workflowService) DeleteWorkflow(ctx context.Context, req *dto.DeleteWorkflowRequest) error {
@@ -133,7 +163,7 @@ func (s *workflowService) DeleteWorkflow(ctx context.Context, req *dto.DeleteWor
 	return nil
 }
 
-func toWorkflowResponse(w *repo.Workflow) *dto.WorkflowResponse {
+func toWorkflowResponse(w *repo.Workflow, nodes []repo.Node, edges []repo.Connection) *dto.WorkflowResponse {
 	return &dto.WorkflowResponse{
 		ID:          w.ID,
 		UserID:      w.UserID,
@@ -141,5 +171,7 @@ func toWorkflowResponse(w *repo.Workflow) *dto.WorkflowResponse {
 		Description: w.Description,
 		CreatedAt:   w.CreatedAt,
 		UpdatedAt:   w.UpdatedAt,
+		Nodes:       nodes,
+		Edges:       edges,
 	}
 }

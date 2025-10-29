@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "date-fns": "^4.1.0",
-    "random-word-slugs": "^0.1.7",
-    "react-error-boundary": "^6.0.0"
-  }
-}

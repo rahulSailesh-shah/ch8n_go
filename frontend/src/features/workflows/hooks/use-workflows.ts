@@ -10,11 +10,10 @@ import {
   getWorkflow,
   getWorkflows,
   updateWorkflow,
-  type CreateWorkflowRequest,
-  type UpdateWorkflowRequest,
 } from "../api";
 import { toast } from "sonner";
 import { useSearch } from "@tanstack/react-router";
+import type { CreateWorkflowRequest } from "../types";
 
 export const useQueryWorkflows = () => {
   const search = useSearch({
@@ -72,7 +71,7 @@ export const useUpdateWorkflow = () => {
       workflow,
     }: {
       id: string;
-      workflow: UpdateWorkflowRequest;
+      workflow: CreateWorkflowRequest;
     }) => updateWorkflow(id, workflow),
     onSuccess: (workflow, variables) => {
       toast.success(`Workflow ${workflow?.name} updated`);

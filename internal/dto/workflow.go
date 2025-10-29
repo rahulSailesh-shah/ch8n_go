@@ -46,10 +46,12 @@ type PaginatedWorkflowsResponse struct {
 }
 
 type WorkflowResponse struct {
-	ID          int32     `json:"id"`
-	UserID      string    `json:"userId"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	ID          int32             `json:"id"`
+	UserID      string            `json:"userId"`
+	Name        string            `json:"name"`
+	Description *string           `json:"description"`
+	CreatedAt   time.Time         `json:"createdAt"`
+	UpdatedAt   time.Time         `json:"updatedAt"`
+	Nodes       []repo.Node       `json:"nodes"`
+	Edges       []repo.Connection `json:"edges"`
 }

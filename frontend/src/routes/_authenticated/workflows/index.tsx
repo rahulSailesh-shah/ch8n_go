@@ -1,8 +1,15 @@
 import AppHeader from "@/components/app-header";
+import { QueryBoundary } from "@/components/query-boundary";
+import {
+  WorkflowErrorView,
+  WorkflowLoadingView,
+} from "@/features/editor/components/editor";
 import {
   WorkflowsContainer,
+  WorkflowsEmptyView,
   WorkflowsList,
 } from "@/features/workflows/components/workflows";
+import { useQueryWorkflows } from "@/features/workflows/hooks/use-workflows";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
@@ -20,14 +27,27 @@ export const Route = createFileRoute("/_authenticated/workflows/")({
 });
 
 function RouteComponent() {
+  const workflowsQuery = useQueryWorkflows();
+
   return (
     <>
-      <AppHeader />
-      <main className="flex-1">
-        <WorkflowsContainer>
-          <WorkflowsList />
-        </WorkflowsContainer>
-      </main>
+      <QueryBoundary
+        query={workflowsQuery}
+        loadingFallback={<WorkflowLoadingView />}
+        errorFallback={<WorkflowErrorView />}
+        emptyFallback={<WorkflowsEmptyView />}
+      >
+        {(workflow) => (
+          <>
+            <AppHeader />
+            <main className="flex-1">
+              <WorkflowsContainer>
+                <WorkflowsList data={workflow} />
+              </WorkflowsContainer>
+            </main>
+          </>
+        )}
+      </QueryBoundary>
     </>
   );
 }

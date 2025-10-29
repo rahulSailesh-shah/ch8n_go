@@ -1,4 +1,4 @@
-import {generateSlug} from "random-word-slugs";
+import { generateSlug } from "random-word-slugs";
 import {
   EmptyView,
   EntityContainer,
@@ -10,21 +10,38 @@ import {
   ErrorView,
   LoadingView,
 } from "@/components/entity-component";
-import {useUpgradeModal} from "@/hooks/use-upgrade-modal";
-import {useNavigate, useRouter, useSearch} from "@tanstack/react-router";
-import type {ReactNode} from "react";
+import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
+import { useNavigate, useRouter, useSearch } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import {
   useCreateWorkflow,
   useDeleteWorkflow,
   useQueryWorkflows,
 } from "../hooks/use-workflows";
-import {useEntitySearch} from "@/hooks/use-entity-search";
-import {Route} from "@/routes/_authenticated/workflows";
-import type {Workflow} from "../api";
-import {WorkflowIcon} from "lucide-react";
-import {formatDistanceToNow} from "date-fns";
+import { useEntitySearch } from "@/hooks/use-entity-search";
+import { Route } from "@/routes/_authenticated/workflows";
+import { WorkflowIcon } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import type { PaginatedWorkflowResponse, WorkflowDTO } from "../types";
 
-export const WorkflowItem = ({data}: { data: Workflow }) => {
+export const WorkflowsList = ({
+  data,
+}: {
+  data: PaginatedWorkflowResponse;
+}) => {
+  return (
+    <EntityList
+      items={data.workflows || []}
+      getKey={(workflow) => workflow.id}
+      emptyView={<WorkflowsEmptyView />}
+      renderItem={(workflow) => (
+        <WorkflowItem key={workflow.id} data={workflow} />
+      )}
+    />
+  );
+};
+
+export const WorkflowItem = ({ data }: { data: WorkflowDTO }) => {
   const deleteWorkflow = useDeleteWorkflow();
   return (
     <EntityItem
@@ -33,52 +50,28 @@ export const WorkflowItem = ({data}: { data: Workflow }) => {
       subtitle={
         <>
           Created{" "}
-          Deleted
-          {formatDistanceToNow(new Date(data.createdAt), {addSuffix: true})}
+          {formatDistanceToNow(new Date(data.createdAt), { addSuffix: true })}
           {"  "} &bull; Updated{" "}
-          {formatDistanceToNow(new Date(data.updatedAt), {addSuffix: true})}
+          {formatDistanceToNow(new Date(data.updatedAt), { addSuffix: true })}
         </>
       }
       image={
         <div className="size-8 flex items-center justify-center">
-          <WorkflowIcon className="size-5 text-muted-foreground"/>
+          <WorkflowIcon className="size-5 text-muted-foreground" />
         </div>
       }
       key={data.id}
       onRemove={() => {
-        deleteWorkflow.mutate(data.id);
+        deleteWorkflow.mutate(String(data.id));
       }}
       isRemoving={deleteWorkflow.isPending}
     />
   );
 };
 
-export const WorkflowsList = () => {
-  const {data: workflows, isLoading, isError} = useQueryWorkflows();
-
-  if (isLoading) {
-    return <WorkflowsLoadingView/>;
-  }
-
-  if (isError) {
-    return <WorkflowsErrorView/>;
-  }
-
-  return (
-    <EntityList
-      items={workflows?.workflows || []}
-      getKey={(workflow) => workflow.id}
-      emptyView={<WorkflowsEmptyView/>}
-      renderItem={(workflow) => (
-        <WorkflowItem key={workflow.id} data={workflow}/>
-      )}
-    />
-  );
-};
-
-export const WorkflowsHeader = ({disabled}: { disabled?: boolean }) => {
+export const WorkflowsHeader = ({ disabled }: { disabled?: boolean }) => {
   const createWorkflow = useCreateWorkflow();
-  const {handleError, modal} = useUpgradeModal();
+  const { handleError, modal } = useUpgradeModal();
   const router = useRouter();
 
   const handleCreateWorkflow = () => {
@@ -120,9 +113,9 @@ export const WorkflowsSearch = () => {
   const navigate = useNavigate({
     from: Route.fullPath,
   });
-  const {searchValue, onSearchChange} = useEntitySearch({
+  const { searchValue, onSearchChange } = useEntitySearch({
     params: search,
-    setParams: (params) => navigate({search: params}),
+    setParams: (params) => navigate({ search: params }),
   });
   return (
     <EntitySearch
@@ -134,7 +127,7 @@ export const WorkflowsSearch = () => {
 };
 
 export const WorkflowsPagination = () => {
-  const {data: workflows, isLoading} = useQueryWorkflows();
+  const { data: workflows, isLoading } = useQueryWorkflows();
   const totalPages = workflows?.totalPages || 1;
 
   const search = useSearch({
@@ -150,19 +143,19 @@ export const WorkflowsPagination = () => {
       totalPages={totalPages}
       onPageChange={(page: number) => {
         console.log(page);
-        navigate({search: {...search, page}});
+        navigate({ search: { ...search, page } });
       }}
       disabled={isLoading}
     />
   );
 };
 
-export const WorkflowsContainer = ({children}: { children: ReactNode }) => {
+export const WorkflowsContainer = ({ children }: { children: ReactNode }) => {
   return (
     <EntityContainer
-      header={<WorkflowsHeader/>}
-      search={<WorkflowsSearch/>}
-      pagination={<WorkflowsPagination/>}
+      header={<WorkflowsHeader />}
+      search={<WorkflowsSearch />}
+      pagination={<WorkflowsPagination />}
     >
       {children}
     </EntityContainer>
@@ -170,23 +163,22 @@ export const WorkflowsContainer = ({children}: { children: ReactNode }) => {
 };
 
 export const WorkflowsLoadingView = () => {
-  return <LoadingView message="Loading workflows..."/>;
+  return <LoadingView message="Loading workflows..." />;
 };
 
 export const WorkflowsErrorView = () => {
-  return <ErrorView message="An error occurred while loading workflows"/>;
+  return <ErrorView message="An error occurred while loading workflows" />;
 };
 
 export const WorkflowsEmptyView = () => {
   const createWorkflow = useCreateWorkflow();
-  const {handleError, modal} = useUpgradeModal();
+  const { handleError, modal } = useUpgradeModal();
   const router = useRouter();
 
   const handleCreateWorkflow = () => {
     createWorkflow.mutate(
       {
         name: "rahul",
-        description: "mkowmow",
       },
       {
         onError: (error) => {

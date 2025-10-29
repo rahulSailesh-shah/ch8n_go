@@ -1,5 +1,11 @@
-import { Editor } from "@/features/editor/components/editor";
+import { QueryBoundary } from "@/components/query-boundary";
+import {
+  Editor,
+  WorkflowErrorView,
+  WorkflowLoadingView,
+} from "@/features/editor/components/editor";
 import EditorHeader from "@/features/editor/components/editor-header";
+import { useQueryWorkflow } from "@/features/workflows/hooks/use-workflows";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/workflows/$workflowId")({
@@ -8,12 +14,23 @@ export const Route = createFileRoute("/_authenticated/workflows/$workflowId")({
 
 function RouteComponent() {
   const { workflowId } = Route.useParams();
+  const workflowQuery = useQueryWorkflow(workflowId);
   return (
     <>
-      <EditorHeader workflowId={workflowId} />
-      <main className="flex-1">
-        <Editor workflowId={workflowId} />
-      </main>
+      <QueryBoundary
+        query={workflowQuery}
+        loadingFallback={<WorkflowLoadingView />}
+        errorFallback={<WorkflowErrorView />}
+      >
+        {(workflow) => (
+          <>
+            <EditorHeader workflow={workflow} />
+            <main className="flex-1">
+              <Editor workflow={workflow} />
+            </main>
+          </>
+        )}
+      </QueryBoundary>
     </>
   );
 }

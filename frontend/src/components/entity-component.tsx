@@ -1,5 +1,7 @@
 import {
+  AlertCircleIcon,
   AlertTriangleIcon,
+  FileX,
   Loader2Icon,
   MoreVerticalIcon,
   PackageOpenIcon,
@@ -335,3 +337,23 @@ export const EntityItem = ({
     </Link>
   );
 };
+
+export const DefaultLoadingFallback = () => (
+  <div className="flex items-center justify-center h-full">
+    <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
+  </div>
+);
+
+export const DefaultErrorFallback = () => (
+  <div className="flex flex-col items-center justify-center h-full gap-2">
+    <AlertCircleIcon className="size-8 text-destructive" />
+    <p className="text-sm text-muted-foreground">Something went wrong</p>
+  </div>
+);
+
+export const DefaultEmptyFallback = () => (
+  <div className="flex flex-col items-center justify-center h-full gap-2">
+    <FileX className="size-8 text-muted-foreground" />
+    <p className="text-sm text-muted-foreground">No data found</p>
+  </div>
+);

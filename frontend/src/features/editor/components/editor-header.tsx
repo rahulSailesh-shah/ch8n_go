@@ -9,26 +9,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import {
-  useQueryWorkflow,
-  useUpdateWorkflow,
-} from "@/features/workflows/hooks/use-workflows";
+import { useUpdateWorkflow } from "@/features/workflows/hooks/use-workflows";
+import type { WorkflowDetails } from "@/features/workflows/types";
 import { Link } from "@tanstack/react-router";
 import { SaveIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
-  const { data: workflow } = useQueryWorkflow(workflowId);
+export const EditorNameInput = ({
+  workflow,
+}: {
+  workflow: WorkflowDetails;
+}) => {
   const updateWorkflow = useUpdateWorkflow();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (workflow?.name) {
-      setName(workflow?.name || "");
+    if (workflow?.workflowName) {
+      setName(workflow?.workflowName || "");
     }
-  }, [workflow?.name]);
+  }, [workflow?.workflowName]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -38,7 +39,7 @@ export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
   }, [isEditing]);
 
   const handleSave = async () => {
-    if (name === workflow?.name) {
+    if (name === workflow?.workflowName) {
       setIsEditing(false);
       return;
     }
@@ -46,7 +47,7 @@ export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
     try {
       if (inputRef.current) {
         updateWorkflow.mutateAsync({
-          id: workflowId,
+          id: workflow.workflowId.toString(),
           workflow: {
             name: inputRef.current?.value || "",
           },
@@ -54,7 +55,7 @@ export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
         setIsEditing(false);
       }
     } catch {
-      setName(workflow?.name || "");
+      setName(workflow?.workflowName || "");
     } finally {
       setIsEditing(false);
     }
@@ -64,14 +65,10 @@ export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
     if (e.key === "Enter") {
       handleSave();
     } else if (e.key === "Escape") {
-      setName(workflow?.name || "");
+      setName(workflow?.workflowName || "");
       setIsEditing(false);
     }
   };
-
-  if (!workflow) {
-    return null;
-  }
 
   if (isEditing) {
     return (
@@ -94,12 +91,16 @@ export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
       className="cursor-pointer hover:text-foreground transition-colors"
       onClick={() => setIsEditing(true)}
     >
-      {workflow.name}
+      {workflow.workflowName}
     </BreadcrumbItem>
   );
 };
 
-export const EditorBreadcrumb = ({ workflowId }: { workflowId: string }) => {
+export const EditorBreadcrumb = ({
+  workflow,
+}: {
+  workflow: WorkflowDetails;
+}) => {
   return (
     <Breadcrumb>
       <BreadcrumbList>
@@ -111,13 +112,13 @@ export const EditorBreadcrumb = ({ workflowId }: { workflowId: string }) => {
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
-        <EditorNameInput workflowId={workflowId} />
+        <EditorNameInput workflow={workflow} />
       </BreadcrumbList>
     </Breadcrumb>
   );
 };
 
-export const EditorSaveButton = ({ workflowId }: { workflowId: string }) => {
+export const EditorSaveButton = ({ workflowId }: { workflowId: number }) => {
   return (
     <div className="ml-auto">
       <Button onClick={() => console.log(workflowId)} disabled={false}>
@@ -128,13 +129,13 @@ export const EditorSaveButton = ({ workflowId }: { workflowId: string }) => {
   );
 };
 
-const EditorHeader = ({ workflowId }: { workflowId: string }) => {
+const EditorHeader = ({ workflow }: { workflow: WorkflowDetails }) => {
   return (
     <div className="flex h-14 shrink-0 items-center gap-2 border-b px-4 bg-background">
       <SidebarTrigger />
       <div className="flex flex-row items-center justify-between gap-x-4 w-full">
-        <EditorBreadcrumb workflowId={workflowId} />
-        <EditorSaveButton workflowId={workflowId} />
+        <EditorBreadcrumb workflow={workflow} />
+        <EditorSaveButton workflowId={workflow.workflowId} />
       </div>
       <div className="ml-auto">
         <ThemeToggle />

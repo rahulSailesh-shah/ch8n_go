@@ -1,23 +1,70 @@
-import { useQueryWorkflow } from "@/features/workflows/hooks/use-workflows";
 import { LoadingView } from "@/components/entity-component";
 import { ErrorView } from "@/components/entity-component";
+import { useState, useCallback } from "react";
+import {
+  ReactFlow,
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge,
+  type Node,
+  type Edge,
+  type NodeChange,
+  type EdgeChange,
+  type Connection,
+  Background,
+  Controls,
+  MiniMap,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import { NODE_COMPONENTS } from "@/config/node-components";
+import type { WorkflowDetails } from "@/features/workflows/types";
 
-export const Editor = ({ workflowId }: { workflowId: string }) => {
-  const {
-    data: workflowData,
-    isLoading,
-    isError,
-  } = useQueryWorkflow(workflowId);
+interface EditorProps {
+  workflow: WorkflowDetails;
+}
 
-  if (isLoading) {
-    return <WorkflowLoadingView />;
-  }
+export const Editor = ({ workflow }: EditorProps) => {
+  const [nodes, setNodes] = useState<Node[]>(workflow.nodes);
+  const [edges, setEdges] = useState<Edge[]>(workflow.edges);
 
-  if (isError) {
-    return <WorkflowErrorView />;
-  }
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) =>
+      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
+    []
+  );
 
-  return <div>{JSON.stringify(workflowData, null, 2)}</div>;
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) =>
+      setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
+    []
+  );
+
+  const onConnect = useCallback(
+    (params: Connection) =>
+      setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
+    []
+  );
+
+  return (
+    <div className="size-full">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={NODE_COMPONENTS}
+        fitView
+        proOptions={{
+          hideAttribution: true,
+        }}
+      >
+        <Background />
+        <Controls />
+        <MiniMap />
+      </ReactFlow>
+    </div>
+  );
 };
 
 export const WorkflowLoadingView = () => {
