@@ -178,7 +178,7 @@ export const WorkflowsEmptyView = () => {
   const handleCreateWorkflow = () => {
     createWorkflow.mutate(
       {
-        name: "rahul",
+        name: generateSlug(),
       },
       {
         onError: (error) => {

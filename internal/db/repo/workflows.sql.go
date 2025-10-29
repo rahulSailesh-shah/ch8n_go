@@ -8,6 +8,8 @@ package repo
 import (
 	"context"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const createWorkflow = `-- name: CreateWorkflow :one
@@ -40,7 +42,7 @@ const deleteWorkflow = `-- name: DeleteWorkflow :exec
 DELETE FROM workflow WHERE id = $1
 `
 
-func (q *Queries) DeleteWorkflow(ctx context.Context, id int32) error {
+func (q *Queries) DeleteWorkflow(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteWorkflow, id)
 	return err
 }
@@ -50,8 +52,8 @@ SELECT id, user_id, name, description, created_at, updated_at FROM workflow WHER
 `
 
 type GetWorkflowByIDParams struct {
-	ID     int32  `json:"id"`
-	UserID string `json:"userId"`
+	ID     uuid.UUID `json:"id"`
+	UserID string    `json:"userId"`
 }
 
 func (q *Queries) GetWorkflowByID(ctx context.Context, arg GetWorkflowByIDParams) (Workflow, error) {
@@ -85,7 +87,7 @@ type GetWorkflowsByUserIDParams struct {
 }
 
 type GetWorkflowsByUserIDRow struct {
-	ID          int32     `json:"id"`
+	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
 	UserID      string    `json:"userId"`
@@ -166,9 +168,9 @@ RETURNING id, user_id, name, description, created_at, updated_at
 `
 
 type UpdateWorkflowParams struct {
-	ID          int32   `json:"id"`
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
 }
 
 func (q *Queries) UpdateWorkflow(ctx context.Context, arg UpdateWorkflowParams) (Workflow, error) {

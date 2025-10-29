@@ -14,10 +14,12 @@ import {
   Background,
   Controls,
   MiniMap,
+  Panel,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { NODE_COMPONENTS } from "@/config/node-components";
 import type { WorkflowDetails } from "@/features/workflows/types";
+import { AddNodeButton } from "./add-node";
 
 interface EditorProps {
   workflow: WorkflowDetails;
@@ -62,6 +64,9 @@ export const Editor = ({ workflow }: EditorProps) => {
         <Background />
         <Controls />
         <MiniMap />
+        <Panel position="top-right">
+          <AddNodeButton />
+        </Panel>
       </ReactFlow>
     </div>
   );

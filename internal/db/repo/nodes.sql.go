@@ -8,6 +8,8 @@ package repo
 import (
 	"context"
 	"encoding/json"
+
+	"github.com/google/uuid"
 )
 
 const createNode = `-- name: CreateNode :one
@@ -17,7 +19,7 @@ RETURNING id, workflow_id, name, type, position, data, created_at, updated_at
 `
 
 type CreateNodeParams struct {
-	WorkflowID int32           `json:"workflowId"`
+	WorkflowID uuid.UUID       `json:"workflowId"`
 	Name       string          `json:"name"`
 	Type       string          `json:"type"`
 	Position   json.RawMessage `json:"position"`
@@ -51,8 +53,8 @@ DELETE FROM node WHERE id = $1 AND workflow_id = $2
 `
 
 type DeleteNodeParams struct {
-	ID         int32 `json:"id"`
-	WorkflowID int32 `json:"workflowId"`
+	ID         uuid.UUID `json:"id"`
+	WorkflowID uuid.UUID `json:"workflowId"`
 }
 
 func (q *Queries) DeleteNode(ctx context.Context, arg DeleteNodeParams) error {
@@ -65,8 +67,8 @@ SELECT id, workflow_id, name, type, position, data, created_at, updated_at FROM 
 `
 
 type GetNodeByIDParams struct {
-	ID         int32 `json:"id"`
-	WorkflowID int32 `json:"workflowId"`
+	ID         uuid.UUID `json:"id"`
+	WorkflowID uuid.UUID `json:"workflowId"`
 }
 
 func (q *Queries) GetNodeByID(ctx context.Context, arg GetNodeByIDParams) (Node, error) {
@@ -89,7 +91,7 @@ const getNodesByWorkflowID = `-- name: GetNodesByWorkflowID :many
 SELECT id, workflow_id, name, type, position, data, created_at, updated_at FROM node WHERE workflow_id = $1
 `
 
-func (q *Queries) GetNodesByWorkflowID(ctx context.Context, workflowID int32) ([]Node, error) {
+func (q *Queries) GetNodesByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]Node, error) {
 	rows, err := q.db.Query(ctx, getNodesByWorkflowID, workflowID)
 	if err != nil {
 		return nil, err
@@ -159,8 +161,8 @@ RETURNING id, workflow_id, name, type, position, data, created_at, updated_at
 `
 
 type UpdateNodeParams struct {
-	ID         int32           `json:"id"`
-	WorkflowID int32           `json:"workflowId"`
+	ID         uuid.UUID       `json:"id"`
+	WorkflowID uuid.UUID       `json:"workflowId"`
 	Name       string          `json:"name"`
 	Type       string          `json:"type"`
 	Position   json.RawMessage `json:"position"`

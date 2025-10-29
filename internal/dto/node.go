@@ -3,8 +3,7 @@ package dto
 type NodeType string
 
 const (
-	NodeTypeInitial NodeType = "initial"
-	NodeTypeStart   NodeType = "start"
-	NodeTypeEnd     NodeType = "end"
-	NodeTypeAction  NodeType = "action"
+	NodeTypeInitial   NodeType = "INITIAL"
+	NodeManualTrigger NodeType = "MANUAL_TRIGGER"
+	NodeHTTPTrigger   NodeType = "HTTP_TRIGGER"
 )

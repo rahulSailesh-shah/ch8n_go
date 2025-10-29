@@ -3,6 +3,7 @@ package dto
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/db/repo"
 )
 
@@ -13,20 +14,20 @@ type CreateWorkflowRequest struct {
 }
 
 type UpdateWorkflowRequest struct {
-	UserID      string  `json:"-"`
-	ID          int32   `json:"-"`
-	Name        *string `json:"name,omitempty" validate:"omitempty,min=3,max=100"`
-	Description *string `json:"description,omitempty" validate:"omitempty,max=500"`
+	UserID      string    `json:"-"`
+	ID          uuid.UUID `json:"-"`
+	Name        *string   `json:"name,omitempty" validate:"omitempty,min=3,max=100"`
+	Description *string   `json:"description,omitempty" validate:"omitempty,max=500"`
 }
 
 type DeleteWorkflowRequest struct {
-	UserID string `json:"userId" validate:"required"`
-	ID     int32  `json:"id" validate:"required"`
+	UserID string    `json:"userId" validate:"required"`
+	ID     uuid.UUID `json:"id" validate:"required"`
 }
 
 type GetWorkflowByIDRequest struct {
-	UserID string `json:"userId" validate:"required"`
-	ID     int32  `json:"id" validate:"required"`
+	UserID string    `json:"userId" validate:"required"`
+	ID     uuid.UUID `json:"id" validate:"required"`
 }
 
 type GetWorkflowsRequest struct {
@@ -46,7 +47,7 @@ type PaginatedWorkflowsResponse struct {
 }
 
 type WorkflowResponse struct {
-	ID          int32             `json:"id"`
+	ID          uuid.UUID         `json:"id"`
 	UserID      string            `json:"userId"`
 	Name        string            `json:"name"`
 	Description *string           `json:"description"`

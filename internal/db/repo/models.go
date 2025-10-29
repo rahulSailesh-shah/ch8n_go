@@ -7,13 +7,15 @@ package repo
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Connection struct {
-	ID           int32     `json:"id"`
-	WorkflowID   int32     `json:"workflowId"`
-	SourceNodeID int32     `json:"sourceNodeId"`
-	TargetNodeID int32     `json:"targetNodeId"`
+	ID           uuid.UUID `json:"id"`
+	WorkflowID   uuid.UUID `json:"workflowId"`
+	SourceNodeID uuid.UUID `json:"sourceNodeId"`
+	TargetNodeID uuid.UUID `json:"targetNodeId"`
 	FromOutput   string    `json:"fromOutput"`
 	ToInput      string    `json:"toInput"`
 	CreatedAt    time.Time `json:"createdAt"`
@@ -21,8 +23,8 @@ type Connection struct {
 }
 
 type Node struct {
-	ID         int32           `json:"id"`
-	WorkflowID int32           `json:"workflowId"`
+	ID         uuid.UUID       `json:"id"`
+	WorkflowID uuid.UUID       `json:"workflowId"`
 	Name       string          `json:"name"`
 	Type       string          `json:"type"`
 	Position   json.RawMessage `json:"position"`
@@ -32,7 +34,7 @@ type Node struct {
 }
 
 type Workflow struct {
-	ID          int32     `json:"id"`
+	ID          uuid.UUID `json:"id"`
 	UserID      string    `json:"userId"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`

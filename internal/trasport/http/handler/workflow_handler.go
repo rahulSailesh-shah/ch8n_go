@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/dto"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/service"
 )
@@ -73,7 +74,7 @@ func (h *WorkflowHandler) GetWorkflowsByUserID(c *gin.Context) {
 }
 
 func (h *WorkflowHandler) GetWorkflowByID(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Message: "Invalid workflow ID",
@@ -83,7 +84,7 @@ func (h *WorkflowHandler) GetWorkflowByID(c *gin.Context) {
 	}
 
 	workflow, err := h.workflowService.GetWorkflowByID(c.Request.Context(), &dto.GetWorkflowByIDRequest{
-		ID:     int32(id),
+		ID:     id,
 		UserID: c.MustGet("user_id").(string),
 	})
 	if err != nil {
@@ -100,7 +101,7 @@ func (h *WorkflowHandler) GetWorkflowByID(c *gin.Context) {
 }
 
 func (h *WorkflowHandler) UpdateWorkflow(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Message: "Invalid workflow ID",
@@ -118,8 +119,9 @@ func (h *WorkflowHandler) UpdateWorkflow(c *gin.Context) {
 		return
 	}
 
+	req.ID = id
 	req.UserID = c.MustGet("user_id").(string)
-	req.ID = int32(id)
+
 	workflow, err := h.workflowService.UpdateWorkflow(c.Request.Context(), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
@@ -135,7 +137,7 @@ func (h *WorkflowHandler) UpdateWorkflow(c *gin.Context) {
 }
 
 func (h *WorkflowHandler) DeleteWorkflow(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Message: "Invalid workflow ID",
@@ -144,7 +146,7 @@ func (h *WorkflowHandler) DeleteWorkflow(c *gin.Context) {
 		return
 	}
 	err = h.workflowService.DeleteWorkflow(c.Request.Context(), &dto.DeleteWorkflowRequest{
-		ID:     int32(id),
+		ID:     id,
 		UserID: c.MustGet("user_id").(string),
 	})
 	if err != nil {

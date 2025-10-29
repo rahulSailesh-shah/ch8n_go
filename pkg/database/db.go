@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	cfg "github.com/rahulSailesh-shah/ch8n_go/pkg/config"
 )
@@ -13,12 +14,12 @@ import (
 type DB interface {
 	Close() error
 	Connect() error
-	GetDB() *pgx.Conn
+	GetDB() *pgxpool.Pool
 }
 
 type db struct {
 	ctx context.Context
-	db  *pgx.Conn
+	db  *pgxpool.Pool
 	cfg cfg.DBConfig
 }
 
@@ -30,7 +31,7 @@ func NewDB(ctx context.Context, cfg cfg.DBConfig) DB {
 	}
 }
 
-func (d *db) GetDB() *pgx.Conn {
+func (d *db) GetDB() *pgxpool.Pool {
 	return d.db
 }
 
@@ -39,19 +40,34 @@ func (d *db) Close() error {
 	if d.db == nil {
 		return fmt.Errorf("database connection is already closed")
 	}
-	return d.db.Close(d.ctx)
+	d.db.Close()
+	return nil
 }
 
 func (d *db) Connect() error {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		d.cfg.User, d.cfg.Password, d.cfg.Host, d.cfg.Port, d.cfg.Name)
+	config, err := pgxpool.ParseConfig("")
+	if err != nil {
+		return err
+	}
 
-	db, err := pgx.Connect(d.ctx, dsn)
+	config.ConnConfig.Host = d.cfg.Host
+	config.ConnConfig.Port = uint16(d.cfg.Port)
+	config.ConnConfig.User = d.cfg.User
+	config.ConnConfig.Password = d.cfg.Password
+	config.ConnConfig.Database = d.cfg.Name
+
+	config.MaxConns = 50
+	config.MinConns = 10
+	config.MaxConnLifetime = 1 * time.Hour
+	config.MaxConnIdleTime = 30 * time.Minute
+	config.HealthCheckPeriod = 1 * time.Minute
+
+	db, err := pgxpool.NewWithConfig(d.ctx, config)
 	if err != nil {
 		return err
 	}
 
 	d.db = db
-	log.Println("Connected to Database")
+	log.Println("Connected to Database with connection pool")
 	return nil
 }
