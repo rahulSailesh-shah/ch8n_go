@@ -21,6 +21,10 @@ docker-down:
 		docker-compose down; \
 	fi
 
+run-studio:
+	@echo "Starting studio..."
+	@cd external/auth-service && bun run db:studio
+
 
 clean:
 	@echo "Cleaning..."
@@ -62,4 +66,13 @@ run-auth-service:
 	@echo "Starting auth service..."
 	@cd external/auth-service && bun run dev
 
-.PHONY: build run-backend clean watch docker-run docker-down migrate-up migrate-down migrate-status run-frontend run-auth-service
+dev:
+	@echo "Starting development environment..."
+	@if command -v mprocs > /dev/null; then \
+		mprocs "make run-auth-service" "sleep 2 && make run-frontend" "sleep 5 && make watch" "make run-studio"; \
+	else \
+		echo "mprocs is not installed. Install it with: brew install mprocs or cargo install mprocs"; \
+		exit 1; \
+	fi
+
+.PHONY: build run-backend clean watch docker-run docker-down migrate-up migrate-down migrate-status run-frontend run-auth-service dev

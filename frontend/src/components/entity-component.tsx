@@ -347,7 +347,9 @@ export const DefaultLoadingFallback = () => (
 export const DefaultErrorFallback = () => (
   <div className="flex flex-col items-center justify-center h-full gap-2">
     <AlertCircleIcon className="size-8 text-destructive" />
-    <p className="text-sm text-muted-foreground">Something went wrong</p>
+    <p className="text-sm text-muted-foreground">
+      Something went wrong hkjebjikhw
+    </p>
   </div>
 );
 

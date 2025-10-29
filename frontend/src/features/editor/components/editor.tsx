@@ -19,7 +19,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { NODE_COMPONENTS } from "@/config/node-components";
 import type { WorkflowDetails } from "@/features/workflows/types";
-import { AddNodeButton } from "./add-node";
+import { AddNodeButton } from "./add-node-button";
 
 interface EditorProps {
   workflow: WorkflowDetails;

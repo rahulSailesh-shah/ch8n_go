@@ -1,0 +1,5 @@
+export enum NodeType {
+  INITIAL = "INITIAL",
+  MANUAL_TRIGGER = "MANUAL_TRIGGER",
+  HTTP_TRIGGER = "HTTP_TRIGGER",
+}

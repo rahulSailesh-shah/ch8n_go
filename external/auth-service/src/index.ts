@@ -18,7 +18,7 @@ app.use(
 app
   .on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw))
   .get("/", (c) => {
-    return c.text("Hello Hono!");
+    return c.text("Auth Service is running");
   });
 
 export default app;
