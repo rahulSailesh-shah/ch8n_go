@@ -66,6 +66,7 @@ func (s *Server) gracefulShutdown(done chan bool) {
 	<-ctx.Done()
 
 	log.Println("shutting down gracefully, press Ctrl+C again to force")
+	defer s.App.DB.Close()
 	stop()
 
 	timeout := time.Duration(s.App.Config.Server.GracefulShutdownSec) * time.Second
