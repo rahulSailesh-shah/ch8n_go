@@ -5,7 +5,7 @@ import {
 } from "../../../components/react-flow/base-node";
 import { BaseHandle } from "../../../components/react-flow/base-handle";
 import { WorkflowNode } from "../../../components/workflow-node";
-import { Position, type NodeProps } from "@xyflow/react";
+import { Position, useReactFlow, type NodeProps } from "@xyflow/react";
 import type { LucideIcon } from "lucide-react";
 
 interface BaseTriggerNodeProps extends NodeProps {
@@ -20,6 +20,7 @@ interface BaseTriggerNodeProps extends NodeProps {
 
 export const BaseTriggerNode = memo(
   ({
+    id,
     icon: Icon,
     name,
     description,
@@ -27,7 +28,15 @@ export const BaseTriggerNode = memo(
     onSettingsClick,
     onDoubleClick,
   }: BaseTriggerNodeProps) => {
-    const handleDelete = () => {};
+    const { setNodes, setEdges } = useReactFlow();
+
+    const handleDelete = () => {
+      setNodes((nodes) => nodes.filter((node) => node.id !== id));
+      setEdges((edges) =>
+        edges.filter((edge) => edge.source !== id && edge.target !== id)
+      );
+    };
+
     return (
       <div>
         <WorkflowNode

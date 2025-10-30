@@ -160,10 +160,34 @@ func (s *workflowService) DeleteWorkflow(ctx context.Context, req *dto.DeleteWor
 	if err != nil {
 		return err
 	}
+	// Run everything in a transaction
+	tx, err := s.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	q := repo.New(tx)
+
+	// Delete connections first (foreign key constraint)
+	if err := q.DeleteConnectionsByWorkflowID(ctx, req.ID); err != nil {
+		return fmt.Errorf("failed to delete connections: %w", err)
+	}
+
+	// Delete nodes next (foreign key constraint)
+	if err := q.DeleteNodesByWorkflowID(ctx, req.ID); err != nil {
+		return fmt.Errorf("failed to delete nodes: %w", err)
+	}
+
 	err = s.queries.DeleteWorkflow(ctx, req.ID)
 	if err != nil {
 		return err
 	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
 	return nil
 }
 
