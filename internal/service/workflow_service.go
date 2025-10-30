@@ -2,7 +2,13 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/lib/pq"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/db/repo"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/dto"
 )
@@ -11,17 +17,20 @@ type WorkflowService interface {
 	CreateWorkflow(ctx context.Context, workflow *dto.CreateWorkflowRequest) (*dto.WorkflowResponse, error)
 	GetWorkflowsByUserID(ctx context.Context, req *dto.GetWorkflowsRequest) (*dto.PaginatedWorkflowsResponse, error)
 	GetWorkflowByID(ctx context.Context, req *dto.GetWorkflowByIDRequest) (*dto.WorkflowResponse, error)
+	UpdateWorkflowName(ctx context.Context, req *dto.UpdateWorkflowNameRequest) (*dto.WorkflowResponse, error)
 	UpdateWorkflow(ctx context.Context, req *dto.UpdateWorkflowRequest) (*dto.WorkflowResponse, error)
 	DeleteWorkflow(ctx context.Context, req *dto.DeleteWorkflowRequest) error
 }
 
 type workflowService struct {
 	queries *repo.Queries
+	db      *pgxpool.Pool
 }
 
-func NewWorkflowService(queries *repo.Queries) WorkflowService {
+func NewWorkflowService(queries *repo.Queries, db *pgxpool.Pool) WorkflowService {
 	return &workflowService{
 		queries: queries,
+		db:      db,
 	}
 }
 
@@ -35,6 +44,7 @@ func (s *workflowService) CreateWorkflow(ctx context.Context, workflow *dto.Crea
 		return nil, err
 	}
 	node, err := s.queries.CreateNode(ctx, repo.CreateNodeParams{
+		ID:         uuid.New(),
 		WorkflowID: newWorkflow.ID,
 		Name:       string(dto.NodeTypeInitial),
 		Type:       string(dto.NodeTypeInitial),
@@ -107,7 +117,7 @@ func (s *workflowService) GetWorkflowByID(ctx context.Context, req *dto.GetWorkf
 	return toWorkflowResponse(&workflow, nodes, edges), nil
 }
 
-func (s *workflowService) UpdateWorkflow(ctx context.Context, req *dto.UpdateWorkflowRequest) (*dto.WorkflowResponse, error) {
+func (s *workflowService) UpdateWorkflowName(ctx context.Context, req *dto.UpdateWorkflowNameRequest) (*dto.WorkflowResponse, error) {
 	currentWorkflow, err := s.queries.GetWorkflowByID(ctx, repo.GetWorkflowByIDParams{
 		ID:     req.ID,
 		UserID: req.UserID,
@@ -121,15 +131,9 @@ func (s *workflowService) UpdateWorkflow(ctx context.Context, req *dto.UpdateWor
 		name = *req.Name
 	}
 
-	description := currentWorkflow.Description
-	if req.Description != nil && *req.Description != "" {
-		description = req.Description
-	}
-
-	updatedWorkflow, err := s.queries.UpdateWorkflow(ctx, repo.UpdateWorkflowParams{
-		ID:          req.ID,
-		Name:        name,
-		Description: description,
+	updatedWorkflow, err := s.queries.UpdateWorkflowName(ctx, repo.UpdateWorkflowNameParams{
+		ID:   req.ID,
+		Name: name,
 	})
 	if err != nil {
 		return nil, err
@@ -161,6 +165,120 @@ func (s *workflowService) DeleteWorkflow(ctx context.Context, req *dto.DeleteWor
 		return err
 	}
 	return nil
+}
+
+func (s *workflowService) UpdateWorkflow(ctx context.Context, req *dto.UpdateWorkflowRequest) (*dto.WorkflowResponse, error) {
+	workflow, err := s.queries.GetWorkflowByID(ctx, repo.GetWorkflowByIDParams{
+		ID:     req.ID,
+		UserID: req.UserID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workflow: %w", err)
+	}
+
+	// Run everything in a transaction
+	tx, err := s.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	q := repo.New(tx)
+
+	// Delete connections first (foreign key constraint)
+	if err := q.DeleteConnectionsByWorkflowID(ctx, workflow.ID); err != nil {
+		return nil, fmt.Errorf("failed to delete connections: %w", err)
+	}
+
+	// Delete nodes next (foreign key constraint)
+	if err := q.DeleteNodesByWorkflowID(ctx, workflow.ID); err != nil {
+		return nil, fmt.Errorf("failed to delete nodes: %w", err)
+	}
+
+	// Create new nodes
+	newNodeParams, err := toCreateNodeParams(req.Nodes, workflow.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	createdNodes := make([]repo.Node, 0, len(newNodeParams))
+	for _, nodeParam := range newNodeParams {
+		node, err := q.CreateNode(ctx, nodeParam)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create node %s: %w", nodeParam.Name, err)
+		}
+		createdNodes = append(createdNodes, node)
+	}
+
+	// Create new connections
+	newEdgeParams, err := toCreateConnectionParams(req.Edges, workflow.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	createdEdges := make([]repo.Connection, 0, len(newEdgeParams))
+	for _, edgeParam := range newEdgeParams {
+		edge, err := q.CreateConnection(ctx, edgeParam)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create connection: %w", err)
+		}
+		createdEdges = append(createdEdges, edge)
+	}
+
+	// Touch workflow to update updated_at timestamp
+	updatedWorkflow, err := q.UpdateWorkflowName(ctx, repo.UpdateWorkflowNameParams{
+		ID:   workflow.ID,
+		Name: workflow.Name,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to update workflow timestamp: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return toWorkflowResponse(&updatedWorkflow, createdNodes, createdEdges), nil
+}
+
+func toCreateConnectionParams(edges []dto.UpdateConnectionRequest, workflowID uuid.UUID) ([]repo.CreateConnectionParams, error) {
+	createEdges := make([]repo.CreateConnectionParams, 0, len(edges))
+	for _, edge := range edges {
+		createEdges = append(createEdges, repo.CreateConnectionParams{
+			WorkflowID:   workflowID,
+			SourceNodeID: edge.Source,
+			TargetNodeID: edge.Target,
+			FromOutput:   edge.SourceHandle,
+			ToInput:      edge.TargetHandle,
+		})
+	}
+	return createEdges, nil
+}
+
+func toCreateNodeParams(nodes []dto.UpdateNodeRequest, workflowID uuid.UUID) ([]repo.CreateNodeParams, error) {
+	createNodes := make([]repo.CreateNodeParams, 0, len(nodes))
+	for _, node := range nodes {
+		positionJSON, err := json.Marshal(node.Position)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal position for node %s: %w", node.Name, err)
+		}
+
+		// Ensure Data is not nil
+		data := node.Data
+		if data == nil {
+			data = []byte(`{}`)
+		}
+
+		createNodes = append(createNodes, repo.CreateNodeParams{
+			ID:         node.ID,
+			WorkflowID: workflowID,
+			Name:       node.Name,
+			Type:       string(node.Type),
+			Position:   positionJSON,
+			Data:       data,
+		})
+	}
+	return createNodes, nil
 }
 
 func toWorkflowResponse(w *repo.Workflow, nodes []repo.Node, edges []repo.Connection) *dto.WorkflowResponse {

@@ -37,6 +37,7 @@ func RegisterRoutes(r *gin.Engine, service service.Service, authKeys jwk.Set, po
 		workflowGroup.POST("", workflowHandler.CreateWorkflow)
 		workflowGroup.GET("", workflowHandler.GetWorkflowsByUserID)
 		workflowGroup.GET("/:id", workflowHandler.GetWorkflowByID)
+		workflowGroup.PUT("/:id/name", workflowHandler.UpdateWorkflowName)
 		workflowGroup.PUT("/:id", workflowHandler.UpdateWorkflow)
 		workflowGroup.DELETE("/:id", workflowHandler.DeleteWorkflow)
 	}

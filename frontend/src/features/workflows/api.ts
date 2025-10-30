@@ -3,6 +3,7 @@ import type { WorkflowSearchParams } from "@/routes/_authenticated/workflows";
 import type {
   CreateWorkflowRequest,
   PaginatedWorkflowResponse,
+  UpdateWorkflowRequest,
   WorkflowDetails,
   WorkflowDTO,
 } from "./types";
@@ -46,13 +47,10 @@ export const deleteWorkflow = async (id: string) => {
   if (error) handleApiError(error, status);
 };
 
-export const updateWorkflow = async (
-  id: string,
-  workflow: CreateWorkflowRequest
-) => {
+export const updateWorkflowName = async (payload: CreateWorkflowRequest) => {
   const { data, error, status } = await apiClient.put<WorkflowDTO>(
-    `/workflows/${id}`,
-    workflow
+    `/workflows/${payload.id}/name`,
+    payload
   );
   if (error) handleApiError(error, status);
   return data;
@@ -80,8 +78,17 @@ export const getWorkflow = async (
       id: edge.id.toString(),
       source: edge.sourceNodeId.toString(),
       target: edge.targetNodeId.toString(),
-      fromOutput: edge.fromOutput,
-      toInput: edge.toInput,
+      sourceHandle: edge.fromOutput,
+      targetHandle: edge.toInput,
     })),
   };
+};
+
+export const updateWorkflow = async (payload: UpdateWorkflowRequest) => {
+  const { data, error, status } = await apiClient.put<WorkflowDTO>(
+    `/workflows/${payload.id}`,
+    payload
+  );
+  if (error) handleApiError(error, status);
+  return data;
 };

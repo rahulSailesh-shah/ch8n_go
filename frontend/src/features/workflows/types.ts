@@ -1,7 +1,14 @@
 import type { Edge, Node } from "@xyflow/react";
 
 export interface CreateWorkflowRequest {
+  id: string;
   name: string;
+}
+
+export interface UpdateWorkflowRequest {
+  id: string;
+  nodes: Node[];
+  edges: Edge[];
 }
 
 export interface NodePosition {

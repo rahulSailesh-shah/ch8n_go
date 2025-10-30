@@ -1,6 +1,6 @@
 -- name: CreateNode :one
-INSERT INTO node (workflow_id, name, type, position, data)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO node (id, workflow_id, name, type, position, data)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: GetNodeByID :one
@@ -20,3 +20,6 @@ RETURNING *;
 
 -- name: DeleteNode :exec
 DELETE FROM node WHERE id = $1 AND workflow_id = $2;
+
+-- name: DeleteNodesByWorkflowID :exec
+DELETE FROM node WHERE workflow_id = $1;

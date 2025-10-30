@@ -160,21 +160,21 @@ func (q *Queries) ListWorkflows(ctx context.Context) ([]Workflow, error) {
 	return items, nil
 }
 
-const updateWorkflow = `-- name: UpdateWorkflow :one
+const updateWorkflowName = `-- name: UpdateWorkflowName :one
 UPDATE workflow
 SET name = $2, description = $3, updated_at = NOW()
 WHERE id = $1
 RETURNING id, user_id, name, description, created_at, updated_at
 `
 
-type UpdateWorkflowParams struct {
+type UpdateWorkflowNameParams struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
 }
 
-func (q *Queries) UpdateWorkflow(ctx context.Context, arg UpdateWorkflowParams) (Workflow, error) {
-	row := q.db.QueryRow(ctx, updateWorkflow, arg.ID, arg.Name, arg.Description)
+func (q *Queries) UpdateWorkflowName(ctx context.Context, arg UpdateWorkflowNameParams) (Workflow, error) {
+	row := q.db.QueryRow(ctx, updateWorkflowName, arg.ID, arg.Name, arg.Description)
 	var i Workflow
 	err := row.Scan(
 		&i.ID,

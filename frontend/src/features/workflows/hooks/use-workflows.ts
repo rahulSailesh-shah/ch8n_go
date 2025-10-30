@@ -10,10 +10,11 @@ import {
   getWorkflow,
   getWorkflows,
   updateWorkflow,
+  updateWorkflowName,
 } from "../api";
 import { toast } from "sonner";
 import { useSearch } from "@tanstack/react-router";
-import type { CreateWorkflowRequest } from "../types";
+import type { CreateWorkflowRequest, UpdateWorkflowRequest } from "../types";
 
 export const useQueryWorkflows = () => {
   const search = useSearch({
@@ -63,16 +64,29 @@ export const useDeleteWorkflow = () => {
   });
 };
 
+export const useUpdateWorkflowName = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateWorkflowRequest) => updateWorkflowName(payload),
+    onSuccess: (workflow, variables) => {
+      toast.success(`Workflow ${workflow?.name} updated`);
+      queryClient.invalidateQueries({
+        queryKey: ["workflow", variables.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workflows"],
+      });
+    },
+    onError: ({ message }) => {
+      toast.error(message);
+    },
+  });
+};
+
 export const useUpdateWorkflow = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      workflow,
-    }: {
-      id: string;
-      workflow: CreateWorkflowRequest;
-    }) => updateWorkflow(id, workflow),
+    mutationFn: (payload: UpdateWorkflowRequest) => updateWorkflow(payload),
     onSuccess: (workflow, variables) => {
       toast.success(`Workflow ${workflow?.name} updated`);
       queryClient.invalidateQueries({

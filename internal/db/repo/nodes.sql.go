@@ -13,12 +13,13 @@ import (
 )
 
 const createNode = `-- name: CreateNode :one
-INSERT INTO node (workflow_id, name, type, position, data)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO node (id, workflow_id, name, type, position, data)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id, workflow_id, name, type, position, data, created_at, updated_at
 `
 
 type CreateNodeParams struct {
+	ID         uuid.UUID       `json:"id"`
 	WorkflowID uuid.UUID       `json:"workflowId"`
 	Name       string          `json:"name"`
 	Type       string          `json:"type"`
@@ -28,6 +29,7 @@ type CreateNodeParams struct {
 
 func (q *Queries) CreateNode(ctx context.Context, arg CreateNodeParams) (Node, error) {
 	row := q.db.QueryRow(ctx, createNode,
+		arg.ID,
 		arg.WorkflowID,
 		arg.Name,
 		arg.Type,
@@ -59,6 +61,15 @@ type DeleteNodeParams struct {
 
 func (q *Queries) DeleteNode(ctx context.Context, arg DeleteNodeParams) error {
 	_, err := q.db.Exec(ctx, deleteNode, arg.ID, arg.WorkflowID)
+	return err
+}
+
+const deleteNodesByWorkflowID = `-- name: DeleteNodesByWorkflowID :exec
+DELETE FROM node WHERE workflow_id = $1
+`
+
+func (q *Queries) DeleteNodesByWorkflowID(ctx context.Context, workflowID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteNodesByWorkflowID, workflowID)
 	return err
 }
 

@@ -12,8 +12,8 @@ import (
 )
 
 const createConnection = `-- name: CreateConnection :one
-INSERT INTO connection (workflow_id, source_node_id, target_node_id)
-VALUES ($1, $2, $3)
+INSERT INTO connection (workflow_id, source_node_id, target_node_id, from_output, to_input)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id, workflow_id, source_node_id, target_node_id, from_output, to_input, created_at, updated_at
 `
 
@@ -21,10 +21,18 @@ type CreateConnectionParams struct {
 	WorkflowID   uuid.UUID `json:"workflowId"`
 	SourceNodeID uuid.UUID `json:"sourceNodeId"`
 	TargetNodeID uuid.UUID `json:"targetNodeId"`
+	FromOutput   string    `json:"fromOutput"`
+	ToInput      string    `json:"toInput"`
 }
 
 func (q *Queries) CreateConnection(ctx context.Context, arg CreateConnectionParams) (Connection, error) {
-	row := q.db.QueryRow(ctx, createConnection, arg.WorkflowID, arg.SourceNodeID, arg.TargetNodeID)
+	row := q.db.QueryRow(ctx, createConnection,
+		arg.WorkflowID,
+		arg.SourceNodeID,
+		arg.TargetNodeID,
+		arg.FromOutput,
+		arg.ToInput,
+	)
 	var i Connection
 	err := row.Scan(
 		&i.ID,
@@ -50,6 +58,15 @@ type DeleteConnectionParams struct {
 
 func (q *Queries) DeleteConnection(ctx context.Context, arg DeleteConnectionParams) error {
 	_, err := q.db.Exec(ctx, deleteConnection, arg.ID, arg.WorkflowID)
+	return err
+}
+
+const deleteConnectionsByWorkflowID = `-- name: DeleteConnectionsByWorkflowID :exec
+DELETE FROM connection WHERE workflow_id = $1
+`
+
+func (q *Queries) DeleteConnectionsByWorkflowID(ctx context.Context, workflowID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteConnectionsByWorkflowID, workflowID)
 	return err
 }
 

@@ -13,11 +13,17 @@ type CreateWorkflowRequest struct {
 	UserID      string  `json:"-"`
 }
 
+type UpdateWorkflowNameRequest struct {
+	UserID string    `json:"-"`
+	ID     uuid.UUID `json:"-"`
+	Name   *string   `json:"name,omitempty" validate:"omitempty,min=3,max=100"`
+}
+
 type UpdateWorkflowRequest struct {
-	UserID      string    `json:"-"`
-	ID          uuid.UUID `json:"-"`
-	Name        *string   `json:"name,omitempty" validate:"omitempty,min=3,max=100"`
-	Description *string   `json:"description,omitempty" validate:"omitempty,max=500"`
+	ID     uuid.UUID                 `json:"id" validate:"required"`
+	UserID string                    `json:"-"`
+	Nodes  []UpdateNodeRequest       `json:"nodes"`
+	Edges  []UpdateConnectionRequest `json:"edges"`
 }
 
 type DeleteWorkflowRequest struct {

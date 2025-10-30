@@ -20,6 +20,8 @@ import "@xyflow/react/dist/style.css";
 import { NODE_COMPONENTS } from "@/config/node-components";
 import type { WorkflowDetails } from "@/features/workflows/types";
 import { AddNodeButton } from "./add-node-button";
+import { editorAtom } from "../store/atoms";
+import { useSetAtom } from "jotai";
 
 interface EditorProps {
   workflow: WorkflowDetails;
@@ -28,6 +30,11 @@ interface EditorProps {
 export const Editor = ({ workflow }: EditorProps) => {
   const [nodes, setNodes] = useState<Node[]>(workflow.nodes);
   const [edges, setEdges] = useState<Edge[]>(workflow.edges);
+
+  console.log("EDGES:", edges);
+  console.log("NODES:", nodes);
+
+  const setEditor = useSetAtom(editorAtom);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
@@ -57,6 +64,7 @@ export const Editor = ({ workflow }: EditorProps) => {
         onConnect={onConnect}
         nodeTypes={NODE_COMPONENTS}
         fitView
+        onInit={setEditor}
         proOptions={{
           hideAttribution: true,
         }}

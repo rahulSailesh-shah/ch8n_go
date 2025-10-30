@@ -100,6 +100,42 @@ func (h *WorkflowHandler) GetWorkflowByID(c *gin.Context) {
 	})
 }
 
+func (h *WorkflowHandler) UpdateWorkflowName(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid workflow ID",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	var req dto.UpdateWorkflowNameRequest
+	if err = c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid request",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	req.ID = id
+	req.UserID = c.MustGet("user_id").(string)
+
+	workflow, err := h.workflowService.UpdateWorkflowName(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "Failed to update workflow",
+			Error:   err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, dto.SuccessResponse{
+		Message: "Workflow updated successfully",
+		Data:    workflow,
+	})
+}
+
 func (h *WorkflowHandler) UpdateWorkflow(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {

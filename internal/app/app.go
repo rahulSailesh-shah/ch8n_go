@@ -28,7 +28,7 @@ func NewApp(ctx context.Context, cfg *config.AppConfig) (*App, error) {
 	}
 
 	queries := repo.New(dbInstance)
-	service := service.NewService(queries, cfg)
+	service := service.NewService(queries, cfg, dbInstance)
 
 	return &App{
 		Config:  cfg,

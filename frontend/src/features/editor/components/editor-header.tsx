@@ -9,18 +9,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useUpdateWorkflow } from "@/features/workflows/hooks/use-workflows";
+import {
+  useUpdateWorkflow,
+  useUpdateWorkflowName,
+} from "@/features/workflows/hooks/use-workflows";
 import type { WorkflowDetails } from "@/features/workflows/types";
 import { Link } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import { SaveIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { editorAtom } from "../store/atoms";
 
 export const EditorNameInput = ({
   workflow,
 }: {
   workflow: WorkflowDetails;
 }) => {
-  const updateWorkflow = useUpdateWorkflow();
+  const updateWorkflow = useUpdateWorkflowName();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -48,9 +53,7 @@ export const EditorNameInput = ({
       if (inputRef.current) {
         updateWorkflow.mutateAsync({
           id: workflow.workflowId.toString(),
-          workflow: {
-            name: inputRef.current?.value || "",
-          },
+          name: inputRef.current?.value || "",
         });
         setIsEditing(false);
       }
@@ -119,9 +122,24 @@ export const EditorBreadcrumb = ({
 };
 
 export const EditorSaveButton = ({ workflowId }: { workflowId: number }) => {
+  const editor = useAtomValue(editorAtom);
+
+  const saveWorkflow = useUpdateWorkflow();
+
+  const handleSave = () => {
+    if (!editor) {
+      return;
+    }
+    saveWorkflow.mutateAsync({
+      id: workflowId.toString(),
+      nodes: editor.getNodes(),
+      edges: editor.getEdges(),
+    });
+  };
+
   return (
     <div className="ml-auto">
-      <Button onClick={() => console.log(workflowId)} disabled={false}>
+      <Button onClick={handleSave} disabled={saveWorkflow.isPending}>
         <SaveIcon className="size-4" />
         Save
       </Button>
