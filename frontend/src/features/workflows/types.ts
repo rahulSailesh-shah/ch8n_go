@@ -39,7 +39,7 @@ export interface WorkflowEdge {
 }
 
 export interface WorkflowDTO {
-  id: number;
+  id: string;
   name: string;
   description: string;
   userId: string;
@@ -65,7 +65,7 @@ export interface GetWorkflowsRequest {
 }
 
 export interface WorkflowDetails {
-  workflowId: number;
+  workflowId: string;
   workflowName: string;
   nodes: Node[];
   edges: Edge[];

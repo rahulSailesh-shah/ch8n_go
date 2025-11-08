@@ -11,6 +11,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/db/repo"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/dto"
+	"github.com/rahulSailesh-shah/ch8n_go/pkg/inngest"
 )
 
 type WorkflowService interface {
@@ -24,10 +25,11 @@ type WorkflowService interface {
 
 type workflowService struct {
 	queries *repo.Queries
+	inngest *inngest.Inngest
 	db      *pgxpool.Pool
 }
 
-func NewWorkflowService(queries *repo.Queries, db *pgxpool.Pool) WorkflowService {
+func NewWorkflowService(queries *repo.Queries, db *pgxpool.Pool, inngest *inngest.Inngest) WorkflowService {
 	return &workflowService{
 		queries: queries,
 		db:      db,

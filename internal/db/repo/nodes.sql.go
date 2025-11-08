@@ -19,12 +19,12 @@ RETURNING id, workflow_id, name, type, position, data, created_at, updated_at
 `
 
 type CreateNodeParams struct {
-	ID         uuid.UUID       `json:"id"`
-	WorkflowID uuid.UUID       `json:"workflowId"`
-	Name       string          `json:"name"`
-	Type       string          `json:"type"`
-	Position   json.RawMessage `json:"position"`
-	Data       json.RawMessage `json:"data"`
+	ID         uuid.UUID       `db:"id" json:"id"`
+	WorkflowID uuid.UUID       `db:"workflow_id" json:"workflowId"`
+	Name       string          `db:"name" json:"name"`
+	Type       string          `db:"type" json:"type"`
+	Position   json.RawMessage `db:"position" json:"position"`
+	Data       json.RawMessage `db:"data" json:"data"`
 }
 
 func (q *Queries) CreateNode(ctx context.Context, arg CreateNodeParams) (Node, error) {
@@ -55,8 +55,8 @@ DELETE FROM node WHERE id = $1 AND workflow_id = $2
 `
 
 type DeleteNodeParams struct {
-	ID         uuid.UUID `json:"id"`
-	WorkflowID uuid.UUID `json:"workflowId"`
+	ID         uuid.UUID `db:"id" json:"id"`
+	WorkflowID uuid.UUID `db:"workflow_id" json:"workflowId"`
 }
 
 func (q *Queries) DeleteNode(ctx context.Context, arg DeleteNodeParams) error {
@@ -78,8 +78,8 @@ SELECT id, workflow_id, name, type, position, data, created_at, updated_at FROM 
 `
 
 type GetNodeByIDParams struct {
-	ID         uuid.UUID `json:"id"`
-	WorkflowID uuid.UUID `json:"workflowId"`
+	ID         uuid.UUID `db:"id" json:"id"`
+	WorkflowID uuid.UUID `db:"workflow_id" json:"workflowId"`
 }
 
 func (q *Queries) GetNodeByID(ctx context.Context, arg GetNodeByIDParams) (Node, error) {
@@ -172,12 +172,12 @@ RETURNING id, workflow_id, name, type, position, data, created_at, updated_at
 `
 
 type UpdateNodeParams struct {
-	ID         uuid.UUID       `json:"id"`
-	WorkflowID uuid.UUID       `json:"workflowId"`
-	Name       string          `json:"name"`
-	Type       string          `json:"type"`
-	Position   json.RawMessage `json:"position"`
-	Data       json.RawMessage `json:"data"`
+	ID         uuid.UUID       `db:"id" json:"id"`
+	WorkflowID uuid.UUID       `db:"workflow_id" json:"workflowId"`
+	Name       string          `db:"name" json:"name"`
+	Type       string          `db:"type" json:"type"`
+	Position   json.RawMessage `db:"position" json:"position"`
+	Data       json.RawMessage `db:"data" json:"data"`
 }
 
 func (q *Queries) UpdateNode(ctx context.Context, arg UpdateNodeParams) (Node, error) {

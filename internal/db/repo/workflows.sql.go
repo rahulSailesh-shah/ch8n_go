@@ -19,9 +19,9 @@ RETURNING id, user_id, name, description, created_at, updated_at
 `
 
 type CreateWorkflowParams struct {
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
-	UserID      string  `json:"userId"`
+	Name        string  `db:"name" json:"name"`
+	Description *string `db:"description" json:"description"`
+	UserID      string  `db:"user_id" json:"userId"`
 }
 
 func (q *Queries) CreateWorkflow(ctx context.Context, arg CreateWorkflowParams) (Workflow, error) {
@@ -52,8 +52,8 @@ SELECT id, user_id, name, description, created_at, updated_at FROM workflow WHER
 `
 
 type GetWorkflowByIDParams struct {
-	ID     uuid.UUID `json:"id"`
-	UserID string    `json:"userId"`
+	ID     uuid.UUID `db:"id" json:"id"`
+	UserID string    `db:"user_id" json:"userId"`
 }
 
 func (q *Queries) GetWorkflowByID(ctx context.Context, arg GetWorkflowByIDParams) (Workflow, error) {
@@ -80,20 +80,20 @@ LIMIT $3 OFFSET $4
 `
 
 type GetWorkflowsByUserIDParams struct {
-	UserID  string `json:"userId"`
-	Column2 string `json:"column2"`
-	Limit   int32  `json:"limit"`
-	Offset  int32  `json:"offset"`
+	UserID  string `db:"user_id" json:"userId"`
+	Column2 string `db:"column_2" json:"column2"`
+	Limit   int32  `db:"limit" json:"limit"`
+	Offset  int32  `db:"offset" json:"offset"`
 }
 
 type GetWorkflowsByUserIDRow struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description"`
-	UserID      string    `json:"userId"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	TotalCount  int64     `json:"totalCount"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	UserID      string    `db:"user_id" json:"userId"`
+	CreatedAt   time.Time `db:"created_at" json:"createdAt"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updatedAt"`
+	TotalCount  int64     `db:"total_count" json:"totalCount"`
 }
 
 func (q *Queries) GetWorkflowsByUserID(ctx context.Context, arg GetWorkflowsByUserIDParams) ([]GetWorkflowsByUserIDRow, error) {
@@ -168,9 +168,9 @@ RETURNING id, user_id, name, description, created_at, updated_at
 `
 
 type UpdateWorkflowNameParams struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
 }
 
 func (q *Queries) UpdateWorkflowName(ctx context.Context, arg UpdateWorkflowNameParams) (Workflow, error) {

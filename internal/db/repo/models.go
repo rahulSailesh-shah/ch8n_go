@@ -12,32 +12,32 @@ import (
 )
 
 type Connection struct {
-	ID           uuid.UUID `json:"id"`
-	WorkflowID   uuid.UUID `json:"workflowId"`
-	SourceNodeID uuid.UUID `json:"sourceNodeId"`
-	TargetNodeID uuid.UUID `json:"targetNodeId"`
-	FromOutput   string    `json:"fromOutput"`
-	ToInput      string    `json:"toInput"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
+	ID           uuid.UUID `db:"id" json:"id"`
+	WorkflowID   uuid.UUID `db:"workflow_id" json:"workflowId"`
+	SourceNodeID uuid.UUID `db:"source_node_id" json:"sourceNodeId"`
+	TargetNodeID uuid.UUID `db:"target_node_id" json:"targetNodeId"`
+	FromOutput   string    `db:"from_output" json:"fromOutput"`
+	ToInput      string    `db:"to_input" json:"toInput"`
+	CreatedAt    time.Time `db:"created_at" json:"createdAt"`
+	UpdatedAt    time.Time `db:"updated_at" json:"updatedAt"`
 }
 
 type Node struct {
-	ID         uuid.UUID       `json:"id"`
-	WorkflowID uuid.UUID       `json:"workflowId"`
-	Name       string          `json:"name"`
-	Type       string          `json:"type"`
-	Position   json.RawMessage `json:"position"`
-	Data       json.RawMessage `json:"data"`
-	CreatedAt  time.Time       `json:"createdAt"`
-	UpdatedAt  time.Time       `json:"updatedAt"`
+	ID         uuid.UUID       `db:"id" json:"id"`
+	WorkflowID uuid.UUID       `db:"workflow_id" json:"workflowId"`
+	Name       string          `db:"name" json:"name"`
+	Type       string          `db:"type" json:"type"`
+	Position   json.RawMessage `db:"position" json:"position"`
+	Data       json.RawMessage `db:"data" json:"data"`
+	CreatedAt  time.Time       `db:"created_at" json:"createdAt"`
+	UpdatedAt  time.Time       `db:"updated_at" json:"updatedAt"`
 }
 
 type Workflow struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      string    `json:"userId"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	UserID      string    `db:"user_id" json:"userId"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	CreatedAt   time.Time `db:"created_at" json:"createdAt"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updatedAt"`
 }

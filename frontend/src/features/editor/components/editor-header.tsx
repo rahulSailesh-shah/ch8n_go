@@ -121,7 +121,7 @@ export const EditorBreadcrumb = ({
   );
 };
 
-export const EditorSaveButton = ({ workflowId }: { workflowId: number }) => {
+export const EditorSaveButton = ({ workflowId }: { workflowId: string }) => {
   const editor = useAtomValue(editorAtom);
 
   const saveWorkflow = useUpdateWorkflow();

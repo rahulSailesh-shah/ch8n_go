@@ -31,7 +31,7 @@ func NewServer(app *app.App, ctx context.Context) *Server {
 		panic(err)
 	}
 
-	http.RegisterRoutes(engine, *app.Service, authKeys, &app.Config.Polar)
+	http.RegisterRoutes(engine, *app.Service, *app.Inngest, authKeys, &app.Config.Polar)
 
 	srv := &httpSrv.Server{
 		Addr:    fmt.Sprintf(":%d", app.Config.Server.Port),

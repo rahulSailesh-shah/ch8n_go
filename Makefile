@@ -1,3 +1,7 @@
+SERVER_URL ?= http://localhost:8080
+INNGEST_ENDPOINT = $(SERVER_URL)/api/inngest
+
+
 build:
 	@echo "Building..."
 	@go build -o main cmd/api/main.go
@@ -66,6 +70,9 @@ run-auth-service:
 	@echo "Starting auth service..."
 	@cd external/auth-service && bun run dev
 
+run-inngest:
+	@echo "Starting inngest..."
+	npx inngest-cli@latest dev -u $(INNGEST_ENDPOINT)
 dev:
 	@echo "Starting development environment..."
 	@if command -v mprocs > /dev/null; then \
@@ -75,4 +82,4 @@ dev:
 		exit 1; \
 	fi
 
-.PHONY: build run-backend clean watch docker-run docker-down migrate-up migrate-down migrate-status run-frontend run-auth-service dev
+.PHONY: build run-backend clean watch docker-run docker-down migrate-up migrate-down migrate-status run-frontend run-auth-service dev run-inngest

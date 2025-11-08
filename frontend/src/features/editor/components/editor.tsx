@@ -1,6 +1,6 @@
 import { LoadingView } from "@/components/entity-component";
 import { ErrorView } from "@/components/entity-component";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   ReactFlow,
   applyNodeChanges,
@@ -22,6 +22,8 @@ import type { WorkflowDetails } from "@/features/workflows/types";
 import { AddNodeButton } from "./add-node-button";
 import { editorAtom } from "../store/atoms";
 import { useSetAtom } from "jotai";
+import { NodeType } from "@/config/node-types";
+import { ExecuteWorkflowButton } from "./execute-workflow-button";
 
 interface EditorProps {
   workflow: WorkflowDetails;
@@ -51,6 +53,11 @@ export const Editor = ({ workflow }: EditorProps) => {
     []
   );
 
+  const hasManualTrigger = useMemo(
+    () => nodes.some((node) => node.type === NodeType.MANUAL_TRIGGER),
+    [nodes]
+  );
+
   return (
     <div className="size-full">
       <ReactFlow
@@ -77,6 +84,11 @@ export const Editor = ({ workflow }: EditorProps) => {
         <Panel position="top-right">
           <AddNodeButton />
         </Panel>
+        {hasManualTrigger && (
+          <Panel position="bottom-center">
+            <ExecuteWorkflowButton workflowId={workflow.workflowId} />
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   );

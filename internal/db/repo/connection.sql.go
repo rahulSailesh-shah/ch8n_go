@@ -18,11 +18,11 @@ RETURNING id, workflow_id, source_node_id, target_node_id, from_output, to_input
 `
 
 type CreateConnectionParams struct {
-	WorkflowID   uuid.UUID `json:"workflowId"`
-	SourceNodeID uuid.UUID `json:"sourceNodeId"`
-	TargetNodeID uuid.UUID `json:"targetNodeId"`
-	FromOutput   string    `json:"fromOutput"`
-	ToInput      string    `json:"toInput"`
+	WorkflowID   uuid.UUID `db:"workflow_id" json:"workflowId"`
+	SourceNodeID uuid.UUID `db:"source_node_id" json:"sourceNodeId"`
+	TargetNodeID uuid.UUID `db:"target_node_id" json:"targetNodeId"`
+	FromOutput   string    `db:"from_output" json:"fromOutput"`
+	ToInput      string    `db:"to_input" json:"toInput"`
 }
 
 func (q *Queries) CreateConnection(ctx context.Context, arg CreateConnectionParams) (Connection, error) {
@@ -52,8 +52,8 @@ DELETE FROM connection WHERE id = $1 AND workflow_id = $2
 `
 
 type DeleteConnectionParams struct {
-	ID         uuid.UUID `json:"id"`
-	WorkflowID uuid.UUID `json:"workflowId"`
+	ID         uuid.UUID `db:"id" json:"id"`
+	WorkflowID uuid.UUID `db:"workflow_id" json:"workflowId"`
 }
 
 func (q *Queries) DeleteConnection(ctx context.Context, arg DeleteConnectionParams) error {
@@ -75,8 +75,8 @@ SELECT id, workflow_id, source_node_id, target_node_id, from_output, to_input, c
 `
 
 type GetConnectionByIDParams struct {
-	ID         uuid.UUID `json:"id"`
-	WorkflowID uuid.UUID `json:"workflowId"`
+	ID         uuid.UUID `db:"id" json:"id"`
+	WorkflowID uuid.UUID `db:"workflow_id" json:"workflowId"`
 }
 
 func (q *Queries) GetConnectionByID(ctx context.Context, arg GetConnectionByIDParams) (Connection, error) {
@@ -169,10 +169,10 @@ RETURNING id, workflow_id, source_node_id, target_node_id, from_output, to_input
 `
 
 type UpdateConnectionParams struct {
-	ID           uuid.UUID `json:"id"`
-	WorkflowID   uuid.UUID `json:"workflowId"`
-	SourceNodeID uuid.UUID `json:"sourceNodeId"`
-	TargetNodeID uuid.UUID `json:"targetNodeId"`
+	ID           uuid.UUID `db:"id" json:"id"`
+	WorkflowID   uuid.UUID `db:"workflow_id" json:"workflowId"`
+	SourceNodeID uuid.UUID `db:"source_node_id" json:"sourceNodeId"`
+	TargetNodeID uuid.UUID `db:"target_node_id" json:"targetNodeId"`
 }
 
 func (q *Queries) UpdateConnection(ctx context.Context, arg UpdateConnectionParams) (Connection, error) {

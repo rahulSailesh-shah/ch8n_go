@@ -10,9 +10,10 @@ import (
 	"github.com/rahulSailesh-shah/ch8n_go/internal/trasport/http/handler"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/trasport/http/middleware"
 	"github.com/rahulSailesh-shah/ch8n_go/pkg/config"
+	"github.com/rahulSailesh-shah/ch8n_go/pkg/inngest"
 )
 
-func RegisterRoutes(r *gin.Engine, service service.Service, authKeys jwk.Set, polarConfig *config.PolarConfig) {
+func RegisterRoutes(r *gin.Engine, service service.Service, inngest inngest.Inngest, authKeys jwk.Set, polarConfig *config.PolarConfig) {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
@@ -28,12 +29,20 @@ func RegisterRoutes(r *gin.Engine, service service.Service, authKeys jwk.Set, po
 		})
 	})
 
+	// Testing Inngest
+	r.Any("/api/inngest", inngest.Handler())
+
 	protectedGroup := r.Group("")
 	protectedGroup.Use(middleware.AuthMiddleware(authKeys))
 	protectedGroup.Use(middleware.SubscriptionMiddleware(polarConfig))
+
+	// Inngest route
+	// protectedGroup.Any("/api/inngest", inngest.Handler())
+
+	// Workflow routes
+	workflowHandler := handler.NewWorkflowHandler(service.Workflow)
+	workflowGroup := protectedGroup.Group("/workflows")
 	{
-		workflowHandler := handler.NewWorkflowHandler(service.Workflow)
-		workflowGroup := protectedGroup.Group("/workflows")
 		workflowGroup.POST("", workflowHandler.CreateWorkflow)
 		workflowGroup.GET("", workflowHandler.GetWorkflowsByUserID)
 		workflowGroup.GET("/:id", workflowHandler.GetWorkflowByID)
