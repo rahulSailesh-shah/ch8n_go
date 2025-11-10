@@ -21,18 +21,20 @@ type WorkflowService interface {
 	UpdateWorkflowName(ctx context.Context, req *dto.UpdateWorkflowNameRequest) (*dto.WorkflowResponse, error)
 	UpdateWorkflow(ctx context.Context, req *dto.UpdateWorkflowRequest) (*dto.WorkflowResponse, error)
 	DeleteWorkflow(ctx context.Context, req *dto.DeleteWorkflowRequest) error
+	ExecuteWorkflow(ctx context.Context, req *dto.ExecuteWorkflowRequest) (*dto.WorkflowResponse, error)
 }
 
 type workflowService struct {
-	queries *repo.Queries
-	inngest *inngest.Inngest
-	db      *pgxpool.Pool
+	queries        *repo.Queries
+	inngestService *inngest.Inngest
+	db             *pgxpool.Pool
 }
 
 func NewWorkflowService(queries *repo.Queries, db *pgxpool.Pool, inngest *inngest.Inngest) WorkflowService {
 	return &workflowService{
-		queries: queries,
-		db:      db,
+		queries:        queries,
+		db:             db,
+		inngestService: inngest,
 	}
 }
 
@@ -318,4 +320,46 @@ func toWorkflowResponse(w *repo.Workflow, nodes []repo.Node, edges []repo.Connec
 		Nodes:       nodes,
 		Edges:       edges,
 	}
+}
+
+func (s *workflowService) ExecuteWorkflow(ctx context.Context, req *dto.ExecuteWorkflowRequest) (*dto.WorkflowResponse, error) {
+	workflow, err := s.queries.GetWorkflowByID(ctx, repo.GetWorkflowByIDParams{
+		ID:     req.ID,
+		UserID: req.UserID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	nodes, err := s.queries.GetNodesByWorkflowID(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	edges, err := s.queries.GetConnectionsByWorkflowID(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// res, err := s.inngestService.ExecuteDirect(&inngest.ExecuteWorkflowRequest{
+	// 	WorkflowID: req.ID,
+	// 	Nodes:      nodes,
+	// 	Edges:      edges,
+	// })
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// data, _ := json.MarshalIndent(res, "", "  ")
+	// fmt.Println(string(data))
+
+	if err := s.inngestService.ExecuteWorkflow(ctx, &inngest.ExecuteWorkflowRequest{
+		WorkflowID: req.ID,
+		Nodes:      nodes,
+		Edges:      edges,
+	}); err != nil {
+		return nil, err
+	}
+
+	return toWorkflowResponse(&workflow, nodes, edges), nil
 }

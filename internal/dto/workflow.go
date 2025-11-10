@@ -62,3 +62,8 @@ type WorkflowResponse struct {
 	Nodes       []repo.Node       `json:"nodes"`
 	Edges       []repo.Connection `json:"edges"`
 }
+
+type ExecuteWorkflowRequest struct {
+	ID     uuid.UUID `json:"-"`
+	UserID string    `json:"-"`
+}

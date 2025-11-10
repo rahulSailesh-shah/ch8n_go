@@ -196,3 +196,29 @@ func (h *WorkflowHandler) DeleteWorkflow(c *gin.Context) {
 		Message: "Workflow deleted successfully",
 	})
 }
+
+func (h *WorkflowHandler) ExecuteWorkflow(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid workflow ID",
+			Error:   err.Error(),
+		})
+		return
+	}
+	workflow, err := h.workflowService.ExecuteWorkflow(c.Request.Context(), &dto.ExecuteWorkflowRequest{
+		ID:     id,
+		UserID: c.MustGet("user_id").(string),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "Failed to execute workflow",
+			Error:   err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, dto.SuccessResponse{
+		Message: "Workflow executed successfully",
+		Data:    workflow,
+	})
+}

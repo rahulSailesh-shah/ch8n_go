@@ -70,6 +70,50 @@ func (q *Queries) GetWorkflowByID(ctx context.Context, arg GetWorkflowByIDParams
 	return i, err
 }
 
+const getWorkflowWithNodesAndConnections = `-- name: GetWorkflowWithNodesAndConnections :one
+SELECT
+    w.id, w.user_id, w.name, w.description, w.created_at, w.updated_at,
+    COALESCE(json_agg(DISTINCT n.*) FILTER (WHERE n.id IS NOT NULL), '[]') as nodes,
+    COALESCE(json_agg(DISTINCT c.*) FILTER (WHERE c.id IS NOT NULL), '[]') as connections
+FROM workflow w
+LEFT JOIN node n ON n.workflow_id = w.id
+LEFT JOIN connection c ON c.workflow_id = w.id
+WHERE w.id = $1 AND w.user_id = $2
+GROUP BY w.id
+`
+
+type GetWorkflowWithNodesAndConnectionsParams struct {
+	ID     uuid.UUID `db:"id" json:"id"`
+	UserID string    `db:"user_id" json:"userId"`
+}
+
+type GetWorkflowWithNodesAndConnectionsRow struct {
+	ID          uuid.UUID   `db:"id" json:"id"`
+	UserID      string      `db:"user_id" json:"userId"`
+	Name        string      `db:"name" json:"name"`
+	Description *string     `db:"description" json:"description"`
+	CreatedAt   time.Time   `db:"created_at" json:"createdAt"`
+	UpdatedAt   time.Time   `db:"updated_at" json:"updatedAt"`
+	Nodes       interface{} `db:"nodes" json:"nodes"`
+	Connections interface{} `db:"connections" json:"connections"`
+}
+
+func (q *Queries) GetWorkflowWithNodesAndConnections(ctx context.Context, arg GetWorkflowWithNodesAndConnectionsParams) (GetWorkflowWithNodesAndConnectionsRow, error) {
+	row := q.db.QueryRow(ctx, getWorkflowWithNodesAndConnections, arg.ID, arg.UserID)
+	var i GetWorkflowWithNodesAndConnectionsRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Nodes,
+		&i.Connections,
+	)
+	return i, err
+}
+
 const getWorkflowsByUserID = `-- name: GetWorkflowsByUserID :many
 SELECT id, name, description, user_id, created_at, updated_at, COUNT(*) OVER() as total_count
 FROM workflow

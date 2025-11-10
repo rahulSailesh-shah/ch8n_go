@@ -81,6 +81,7 @@ export const NodeSelector = ({
         const newNode = {
           id: uuidv4(),
           type: nodeType.type,
+          name: nodeType.type,
           position: flowPosition,
           data: {},
         };

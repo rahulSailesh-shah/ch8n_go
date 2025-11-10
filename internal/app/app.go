@@ -9,6 +9,12 @@ import (
 	"github.com/rahulSailesh-shah/ch8n_go/pkg/config"
 	"github.com/rahulSailesh-shah/ch8n_go/pkg/database"
 	"github.com/rahulSailesh-shah/ch8n_go/pkg/inngest"
+	"github.com/rahulSailesh-shah/ch8n_go/pkg/registry"
+	"github.com/rahulSailesh-shah/ch8n_go/pkg/template"
+
+	// Initialize all nodes
+	_ "github.com/rahulSailesh-shah/ch8n_go/pkg/node/native/http_node"
+	_ "github.com/rahulSailesh-shah/ch8n_go/pkg/node/native/manual_trigger"
 )
 
 type App struct {
@@ -29,7 +35,14 @@ func NewApp(ctx context.Context, cfg *config.AppConfig) (*App, error) {
 		return nil, fmt.Errorf("database instance is nil")
 	}
 
-	inngestService, err := inngest.NewInngest()
+	nodeRegistry := registry.NewNodeRegistry()
+	if err := registry.InitializeAllNodes(nodeRegistry); err != nil {
+		return nil, err
+	}
+
+	templateEngine := template.NewTemplateEngine()
+
+	inngestService, err := inngest.NewInngest(nodeRegistry, templateEngine)
 	if err != nil {
 		return nil, err
 	}

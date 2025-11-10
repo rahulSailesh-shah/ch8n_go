@@ -92,3 +92,12 @@ export const updateWorkflow = async (payload: UpdateWorkflowRequest) => {
   if (error) handleApiError(error, status);
   return data;
 };
+
+export const executeWorkflow = async (id: string) => {
+  const { data, error, status } = await apiClient.post<WorkflowDTO>(
+    `/workflows/${id}/execute`,
+    {}
+  );
+  if (error) handleApiError(error, status);
+  return data;
+};

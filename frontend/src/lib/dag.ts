@@ -147,6 +147,8 @@ dag.addNode({ id: "1", deps: [] });
 dag.addNode({ id: "2", deps: [] });
 dag.addNode({ id: "3", deps: [] });
 dag.addNode({ id: "4", deps: [] });
+dag.addNode({ id: "5", deps: [] });
+dag.addNode({ id: "6", deps: [] });
 
 dag.addEdge({ from: "1", to: "2" });
 dag.addEdge({ from: "1", to: "3" });

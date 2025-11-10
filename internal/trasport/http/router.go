@@ -49,5 +49,6 @@ func RegisterRoutes(r *gin.Engine, service service.Service, inngest inngest.Inng
 		workflowGroup.PUT("/:id/name", workflowHandler.UpdateWorkflowName)
 		workflowGroup.PUT("/:id", workflowHandler.UpdateWorkflow)
 		workflowGroup.DELETE("/:id", workflowHandler.DeleteWorkflow)
+		workflowGroup.POST("/:id/execute", workflowHandler.ExecuteWorkflow)
 	}
 }

@@ -7,6 +7,7 @@ import {
 import {
   createWorkflow,
   deleteWorkflow,
+  executeWorkflow,
   getWorkflow,
   getWorkflows,
   updateWorkflow,
@@ -95,6 +96,18 @@ export const useUpdateWorkflow = () => {
       queryClient.invalidateQueries({
         queryKey: ["workflows"],
       });
+    },
+    onError: ({ message }) => {
+      toast.error(message);
+    },
+  });
+};
+
+export const useExecuteWorkflow = () => {
+  return useMutation({
+    mutationFn: (id: string) => executeWorkflow(id),
+    onSuccess: (data) => {
+      toast.success(`Workflow: ${data?.name} executed`);
     },
     onError: ({ message }) => {
       toast.error(message);

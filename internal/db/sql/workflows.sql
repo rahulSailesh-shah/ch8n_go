@@ -27,3 +27,15 @@ RETURNING *;
 
 -- name: DeleteWorkflow :exec
 DELETE FROM workflow WHERE id = $1;
+
+
+-- name: GetWorkflowWithNodesAndConnections :one
+SELECT
+    w.*,
+    COALESCE(json_agg(DISTINCT n.*) FILTER (WHERE n.id IS NOT NULL), '[]') as nodes,
+    COALESCE(json_agg(DISTINCT c.*) FILTER (WHERE c.id IS NOT NULL), '[]') as connections
+FROM workflow w
+LEFT JOIN node n ON n.workflow_id = w.id
+LEFT JOIN connection c ON c.workflow_id = w.id
+WHERE w.id = $1 AND w.user_id = $2
+GROUP BY w.id;
