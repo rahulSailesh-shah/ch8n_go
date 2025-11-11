@@ -3,6 +3,7 @@ package http_node
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/rahulSailesh-shah/ch8n_go/pkg/node"
@@ -35,9 +36,21 @@ func (n *HTTPRequestNode) Validate(params map[string]any) error {
 	if _, ok := params["endpoint"]; !ok {
 		return fmt.Errorf("endpoint is required")
 	}
+
+	endpoint, ok := params["endpoint"].(string)
+	if !ok {
+		return fmt.Errorf("endpoint must be a string")
+	}
+
+	_, err := url.ParseRequestURI(endpoint)
+	if err != nil {
+		return fmt.Errorf("endpoint must be a valid URL: %w", err)
+	}
+
 	if _, ok := params["method"]; !ok {
 		return fmt.Errorf("method is required")
 	}
+
 	return nil
 }
 

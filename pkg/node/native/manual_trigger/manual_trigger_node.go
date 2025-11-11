@@ -28,6 +28,9 @@ func (n *ManualTriggerNode) Validate(params map[string]any) error {
 func (n *ManualTriggerNode) Execute(params map[string]any) (map[string]any, error) {
 	res := make(map[string]any)
 	res["data"] = "Node Triggered Manually"
+	res["test data"] = map[string]any{
+		"var": "https://rahulshah.com",
+	}
 
 	return res, nil
 }

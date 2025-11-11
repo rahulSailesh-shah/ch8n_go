@@ -63,7 +63,7 @@ func (i *Inngest) executeWorkflow() error {
 			// Execute nodes in level order
 			for _, level := range nodes {
 				for _, node := range level {
-					ec, err := step.Run(ctx, node.Name, func(ctx context.Context) (*execution.ExecutionContext, error) {
+					ec, err := step.Run(ctx, node.Type, func(ctx context.Context) (*execution.ExecutionContext, error) {
 						return i.executeNode(executionContext, node)
 					})
 					if err != nil {
@@ -83,47 +83,29 @@ func (i *Inngest) executeNode(
 	node repo.Node,
 ) (*execution.ExecutionContext, error) {
 	// Get node from registry
-	fmt.Println("Executing node:", node.Name)
-	workflowNode, err := i.nodeRegistry.Get(node.Name)
+	workflowNode, err := i.nodeRegistry.Get(node.Type)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get node from registry: %w", err)
+		return nil, inngestgo.NoRetryError(fmt.Errorf("failed to get node from registry: %w", err))
 	}
-
-	execData, err := json.MarshalIndent(executionContext, "", " ")
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal execution context: %w", err)
-	}
-	fmt.Println("Execution context:", string(execData))
 
 	// Resolve params using the template engine
 	var nodeParams map[string]any
 	if node.Data != nil {
 		if err := json.Unmarshal(node.Data, &nodeParams); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal node params: %w", err)
+			return nil, inngestgo.NoRetryError(fmt.Errorf("failed to unmarshal node params: %w", err))
 		}
 	} else {
 		nodeParams = make(map[string]any)
 	}
 
-	data, err := json.MarshalIndent(nodeParams, "", " ")
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal node params: %w", err)
-	}
-	fmt.Println("Node params:", string(data))
-
 	resolvedParams, err := i.templateEngine.ResolveParams(nodeParams, executionContext)
 	if err != nil {
-		return nil, fmt.Errorf("failed to resolve params: %w", err)
+		return nil, inngestgo.NoRetryError(fmt.Errorf("failed to resolve params: %w", err))
 	}
-	data, err = json.MarshalIndent(resolvedParams, "", " ")
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal resolved params: %w", err)
-	}
-	fmt.Println("Resolved params:", string(data))
 
 	// Validate params
 	if err := workflowNode.Validate(resolvedParams); err != nil {
-		return nil, fmt.Errorf("validation failed: %w", err)
+		return nil, inngestgo.NoRetryError(fmt.Errorf("validation failed: %w", err))
 	}
 
 	// Execute node
@@ -133,7 +115,7 @@ func (i *Inngest) executeNode(
 	}
 
 	// Store result
-	executionContext.SetNodeOutput(node.Name, result)
+	executionContext.SetNodeOutput(node.Type, result)
 	return executionContext, nil
 }
 
