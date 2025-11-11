@@ -63,7 +63,7 @@ func (i *Inngest) executeWorkflow() error {
 			// Execute nodes in level order
 			for _, level := range nodes {
 				for _, node := range level {
-					ec, err := step.Run(ctx, node.Type, func(ctx context.Context) (*execution.ExecutionContext, error) {
+					ec, err := step.Run(ctx, string(node.Type), func(ctx context.Context) (*execution.ExecutionContext, error) {
 						return i.executeNode(executionContext, node)
 					})
 					if err != nil {
@@ -133,7 +133,7 @@ func (i *Inngest) executeNode(
 	}
 
 	// Store result
-	executionContext.SetNodeOutput(node.Type, result.Data)
+	executionContext.SetNodeOutput(string(node.Type), result.Data)
 	return executionContext, nil
 }
 

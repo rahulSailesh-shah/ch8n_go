@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	constants "github.com/rahulSailesh-shah/ch8n_go/internal/constants"
 )
 
 type Connection struct {
@@ -23,14 +24,14 @@ type Connection struct {
 }
 
 type Node struct {
-	ID         uuid.UUID       `db:"id" json:"id"`
-	WorkflowID uuid.UUID       `db:"workflow_id" json:"workflowId"`
-	Name       string          `db:"name" json:"name"`
-	Type       string          `db:"type" json:"type"`
-	Position   json.RawMessage `db:"position" json:"position"`
-	Data       json.RawMessage `db:"data" json:"data"`
-	CreatedAt  time.Time       `db:"created_at" json:"createdAt"`
-	UpdatedAt  time.Time       `db:"updated_at" json:"updatedAt"`
+	ID         uuid.UUID          `db:"id" json:"id"`
+	WorkflowID uuid.UUID          `db:"workflow_id" json:"workflowId"`
+	Name       string             `db:"name" json:"name"`
+	Type       constants.NodeType `db:"type" json:"type"`
+	Position   json.RawMessage    `db:"position" json:"position"`
+	Data       json.RawMessage    `db:"data" json:"data"`
+	CreatedAt  time.Time          `db:"created_at" json:"createdAt"`
+	UpdatedAt  time.Time          `db:"updated_at" json:"updatedAt"`
 }
 
 type Workflow struct {

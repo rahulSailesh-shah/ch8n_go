@@ -25,6 +25,11 @@ sql:
             go_type:
               import: "encoding/json"
               type: "RawMessage"
+          - column: "node.type"
+            go_type:
+              import: "github.com/rahulSailesh-shah/ch8n_go/internal/constants"
+              package: "constants"
+              type: "NodeType"
           - db_type: "timestamptz"
             go_type:
               import: "time"

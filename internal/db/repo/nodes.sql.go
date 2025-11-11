@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
+	constants "github.com/rahulSailesh-shah/ch8n_go/internal/constants"
 )
 
 const createNode = `-- name: CreateNode :one
@@ -19,12 +20,12 @@ RETURNING id, workflow_id, name, type, position, data, created_at, updated_at
 `
 
 type CreateNodeParams struct {
-	ID         uuid.UUID       `db:"id" json:"id"`
-	WorkflowID uuid.UUID       `db:"workflow_id" json:"workflowId"`
-	Name       string          `db:"name" json:"name"`
-	Type       string          `db:"type" json:"type"`
-	Position   json.RawMessage `db:"position" json:"position"`
-	Data       json.RawMessage `db:"data" json:"data"`
+	ID         uuid.UUID          `db:"id" json:"id"`
+	WorkflowID uuid.UUID          `db:"workflow_id" json:"workflowId"`
+	Name       string             `db:"name" json:"name"`
+	Type       constants.NodeType `db:"type" json:"type"`
+	Position   json.RawMessage    `db:"position" json:"position"`
+	Data       json.RawMessage    `db:"data" json:"data"`
 }
 
 func (q *Queries) CreateNode(ctx context.Context, arg CreateNodeParams) (Node, error) {
@@ -172,12 +173,12 @@ RETURNING id, workflow_id, name, type, position, data, created_at, updated_at
 `
 
 type UpdateNodeParams struct {
-	ID         uuid.UUID       `db:"id" json:"id"`
-	WorkflowID uuid.UUID       `db:"workflow_id" json:"workflowId"`
-	Name       string          `db:"name" json:"name"`
-	Type       string          `db:"type" json:"type"`
-	Position   json.RawMessage `db:"position" json:"position"`
-	Data       json.RawMessage `db:"data" json:"data"`
+	ID         uuid.UUID          `db:"id" json:"id"`
+	WorkflowID uuid.UUID          `db:"workflow_id" json:"workflowId"`
+	Name       string             `db:"name" json:"name"`
+	Type       constants.NodeType `db:"type" json:"type"`
+	Position   json.RawMessage    `db:"position" json:"position"`
+	Data       json.RawMessage    `db:"data" json:"data"`
 }
 
 func (q *Queries) UpdateNode(ctx context.Context, arg UpdateNodeParams) (Node, error) {

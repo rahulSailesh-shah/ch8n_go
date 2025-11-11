@@ -36,10 +36,6 @@ func NewApp(ctx context.Context, cfg *config.AppConfig) (*App, error) {
 	}
 
 	nodeRegistry := registry.NewNodeRegistry()
-	if err := registry.InitializeAllNodes(nodeRegistry); err != nil {
-		return nil, err
-	}
-
 	templateEngine := template.NewTemplateEngine()
 
 	inngestService, err := inngest.NewInngest(nodeRegistry, templateEngine)

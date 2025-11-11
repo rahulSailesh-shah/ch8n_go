@@ -4,14 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
-)
-
-type NodeType string
-
-const (
-	NodeTypeInitial   NodeType = "INITIAL"
-	NodeManualTrigger NodeType = "MANUAL_TRIGGER"
-	NodeHTTPTrigger   NodeType = "HTTP_TRIGGER"
+	"github.com/rahulSailesh-shah/ch8n_go/internal/constants"
 )
 
 type Position struct {
@@ -20,9 +13,9 @@ type Position struct {
 }
 
 type UpdateNodeRequest struct {
-	ID       uuid.UUID       `json:"id" validate:"required"`
-	Type     NodeType        `json:"type" validate:"required"`
-	Name     string          `json:"name" validate:"required"`
-	Position Position        `json:"position" binding:"required"`
-	Data     json.RawMessage `json:"data"`
+	ID       uuid.UUID          `json:"id" validate:"required"`
+	Type     constants.NodeType `json:"type" validate:"required"`
+	Name     string             `json:"name" validate:"required"`
+	Position Position           `json:"position" binding:"required"`
+	Data     json.RawMessage    `json:"data"`
 }

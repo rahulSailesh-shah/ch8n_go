@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
+	"github.com/rahulSailesh-shah/ch8n_go/internal/constants"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/db/repo"
 	"github.com/rahulSailesh-shah/ch8n_go/internal/dto"
 	"github.com/rahulSailesh-shah/ch8n_go/pkg/inngest"
@@ -50,8 +51,8 @@ func (s *workflowService) CreateWorkflow(ctx context.Context, workflow *dto.Crea
 	node, err := s.queries.CreateNode(ctx, repo.CreateNodeParams{
 		ID:         uuid.New(),
 		WorkflowID: newWorkflow.ID,
-		Name:       string(dto.NodeTypeInitial),
-		Type:       string(dto.NodeTypeInitial),
+		Name:       string(constants.INITIAL),
+		Type:       constants.INITIAL,
 		Position:   []byte(`{"x": 0, "y": 0}`),
 	})
 	if err != nil {
@@ -301,7 +302,7 @@ func toCreateNodeParams(nodes []dto.UpdateNodeRequest, workflowID uuid.UUID) ([]
 			ID:         node.ID,
 			WorkflowID: workflowID,
 			Name:       node.Name,
-			Type:       string(node.Type),
+			Type:       node.Type,
 			Position:   positionJSON,
 			Data:       data,
 		})

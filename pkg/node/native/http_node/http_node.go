@@ -10,6 +10,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/rahulSailesh-shah/ch8n_go/internal/constants"
 	"github.com/rahulSailesh-shah/ch8n_go/pkg/node"
 	"github.com/rahulSailesh-shah/ch8n_go/pkg/registry"
 )
@@ -19,7 +20,7 @@ type HTTPRequestNode struct {
 }
 
 func init() {
-	registry.RegisterFactory("http_request", func() (node.WorkflowNode, error) {
+	registry.RegisterFactory(constants.HTTP_TRIGGER, func() (node.WorkflowNode, error) {
 		return NewHTTPRequestNode()
 	})
 }
@@ -30,10 +31,6 @@ func NewHTTPRequestNode() (*HTTPRequestNode, error) {
 			Timeout: time.Second * 30,
 		},
 	}, nil
-}
-
-func (n *HTTPRequestNode) GetName() string {
-	return "HTTP_TRIGGER"
 }
 
 func (n *HTTPRequestNode) Validate(params map[string]any) error {
@@ -72,7 +69,7 @@ func (n *HTTPRequestNode) Execute(params map[string]any) *node.ExecutionResult {
 			jsonBody, err := json.Marshal(v)
 			if err != nil {
 				return &node.ExecutionResult{
-					Status: node.ExecutionStatusFailed,
+					Status: constants.ExecutionStatusFailed,
 					Error:  err,
 				}
 			}
@@ -90,7 +87,7 @@ func (n *HTTPRequestNode) Execute(params map[string]any) *node.ExecutionResult {
 	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {
 		return &node.ExecutionResult{
-			Status: node.ExecutionStatusFailed,
+			Status: constants.ExecutionStatusFailed,
 			Error:  err,
 		}
 	}
@@ -110,7 +107,7 @@ func (n *HTTPRequestNode) Execute(params map[string]any) *node.ExecutionResult {
 	resp, err := n.client.Do(req)
 	if err != nil {
 		return &node.ExecutionResult{
-			Status: node.ExecutionStatusFailed,
+			Status: constants.ExecutionStatusFailed,
 			Error:  err,
 		}
 	}
@@ -120,7 +117,7 @@ func (n *HTTPRequestNode) Execute(params map[string]any) *node.ExecutionResult {
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return &node.ExecutionResult{
-			Status: node.ExecutionStatusFailed,
+			Status: constants.ExecutionStatusFailed,
 			Error:  err,
 		}
 	}
@@ -129,7 +126,7 @@ func (n *HTTPRequestNode) Execute(params map[string]any) *node.ExecutionResult {
 	var jsonResp map[string]any
 	if err := json.Unmarshal(respBody, &jsonResp); err == nil {
 		return &node.ExecutionResult{
-			Status: node.ExecutionStatusSuccess,
+			Status: constants.ExecutionStatusSuccess,
 			Data: map[string]any{
 				"status":  resp.StatusCode,
 				"data":    jsonResp,
@@ -140,7 +137,7 @@ func (n *HTTPRequestNode) Execute(params map[string]any) *node.ExecutionResult {
 
 	// Return response as string if not JSON
 	return &node.ExecutionResult{
-		Status: node.ExecutionStatusSuccess,
+		Status: constants.ExecutionStatusSuccess,
 		Data: map[string]any{
 			"status":  resp.StatusCode,
 			"data":    string(respBody),
