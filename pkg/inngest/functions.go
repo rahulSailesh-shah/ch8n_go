@@ -88,6 +88,12 @@ func (i *Inngest) executeNode(
 		return nil, inngestgo.NoRetryError(fmt.Errorf("failed to get node from registry: %w", err))
 	}
 
+	data, err := json.MarshalIndent(executionContext, "", "  ")
+	if err != nil {
+		return nil, inngestgo.NoRetryError(fmt.Errorf("failed to marshal node: %w", err))
+	}
+	fmt.Println("EXECUTION CONTEXT", string(data))
+
 	// Resolve params using the template engine
 	var nodeParams map[string]any
 	if node.Data != nil {
@@ -98,10 +104,22 @@ func (i *Inngest) executeNode(
 		nodeParams = make(map[string]any)
 	}
 
+	data, err = json.MarshalIndent(nodeParams, "", "  ")
+	if err != nil {
+		return nil, inngestgo.NoRetryError(fmt.Errorf("failed to marshal node params: %w", err))
+	}
+	fmt.Println("NODE PARAMS", string(data))
+
 	resolvedParams, err := i.templateEngine.ResolveParams(nodeParams, executionContext)
 	if err != nil {
 		return nil, inngestgo.NoRetryError(fmt.Errorf("failed to resolve params: %w", err))
 	}
+
+	data, err = json.MarshalIndent(resolvedParams, "", "  ")
+	if err != nil {
+		return nil, inngestgo.NoRetryError(fmt.Errorf("failed to marshal resolved params: %w", err))
+	}
+	fmt.Println("RESOLVED PARAMS", string(data))
 
 	// Validate params
 	if err := workflowNode.Validate(resolvedParams); err != nil {
@@ -109,13 +127,13 @@ func (i *Inngest) executeNode(
 	}
 
 	// Execute node
-	result, err := workflowNode.Execute(resolvedParams)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute node: %w", err)
+	result := workflowNode.Execute(resolvedParams)
+	if result.Error != nil {
+		return nil, inngestgo.NoRetryError(fmt.Errorf("execution failed: %w", result.Error))
 	}
 
 	// Store result
-	executionContext.SetNodeOutput(node.Type, result)
+	executionContext.SetNodeOutput(node.Type, result.Data)
 	return executionContext, nil
 }
 

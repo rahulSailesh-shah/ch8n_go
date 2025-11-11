@@ -75,6 +75,9 @@ export const HTTPRequestDialog = ({
   const showBodyField = ["POST", "PUT", "PATCH"].includes(watchMethod);
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
+    if (["GET", "DELETE"].includes(data.method)) {
+      data.body = "";
+    }
     onSubmit(data);
     onOpenChange(false);
   };

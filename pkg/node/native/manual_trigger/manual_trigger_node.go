@@ -1,4 +1,4 @@
-package http_node
+package manual_trigger_node
 
 import (
 	"github.com/rahulSailesh-shah/ch8n_go/pkg/node"
@@ -25,12 +25,8 @@ func (n *ManualTriggerNode) Validate(params map[string]any) error {
 	return nil
 }
 
-func (n *ManualTriggerNode) Execute(params map[string]any) (map[string]any, error) {
-	res := make(map[string]any)
-	res["data"] = "Node Triggered Manually"
-	res["test data"] = map[string]any{
-		"var": "https://rahulshah.com",
+func (n *ManualTriggerNode) Execute(params map[string]any) *node.ExecutionResult {
+	return &node.ExecutionResult{
+		Status: node.ExecutionStatusSuccess,
 	}
-
-	return res, nil
 }
