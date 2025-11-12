@@ -16,6 +16,7 @@ type ExecuteWorkflowRequest struct {
 	WorkflowID uuid.UUID         `json:"workflow_id"`
 	Nodes      []repo.Node       `json:"nodes"`
 	Edges      []repo.Connection `json:"edges"`
+	Data       []byte            `json:"data"`
 }
 
 func (i *Inngest) RegisterFunctions() error {
@@ -30,6 +31,7 @@ func (i *Inngest) ExecuteWorkflow(ctx context.Context, data *ExecuteWorkflowRequ
 			"nodes":       data.Nodes,
 			"edges":       data.Edges,
 			"workflow_id": data.WorkflowID,
+			"data":        data.Data,
 		},
 	})
 	return err
@@ -60,12 +62,25 @@ func (i *Inngest) executeWorkflow() error {
 			// Create execution context
 			executionContext := execution.NewExecutionContext(input.Event.Data.WorkflowID)
 
+			// Set webhook data if available
+			if len(input.Event.Data.Data) > 0 {
+				var data map[string]any
+				if err := json.Unmarshal(input.Event.Data.Data, &data); err != nil {
+					data = map[string]any{
+						"data": string(input.Event.Data.Data),
+					}
+				}
+				// TODO: Read from the Trigger node and set its variable name
+				executionContext.SetNodeOutput("WEBHOOK_TRIGGER", data)
+			}
+
 			// Execute nodes in level order
 			for _, level := range nodes {
 				for _, node := range level {
-					ec, err := step.Run(ctx, string(node.Type), func(ctx context.Context) (*execution.ExecutionContext, error) {
-						return i.executeNode(executionContext, node)
-					})
+					ec, err := step.Run(ctx, string(node.Type),
+						func(ctx context.Context) (*execution.ExecutionContext, error) {
+							return i.executeNode(executionContext, node)
+						})
 					if err != nil {
 						return nil, err
 					}
@@ -133,28 +148,7 @@ func (i *Inngest) executeNode(
 	}
 
 	// Store result
-	executionContext.SetNodeOutput(string(node.Type), result.Data)
-	return executionContext, nil
-}
-
-// For testing purpose
-func (i *Inngest) ExecuteDirect(data *ExecuteWorkflowRequest) (*execution.ExecutionContext, error) {
-	dag := NewDAG(data.Nodes, data.Edges)
-	if !dag.ValidateGraph() {
-		return nil, fmt.Errorf("graph is not valid")
-	}
-	levelOrder := dag.GetLevelOrder()
-
-	executionContext := execution.NewExecutionContext(data.WorkflowID)
-	var err error
-
-	for _, level := range levelOrder {
-		for _, node := range level {
-			executionContext, err = i.executeNode(executionContext, node)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
+	nodeName := resolvedParams["variableName"].(string)
+	executionContext.SetNodeOutput(nodeName, result.Data)
 	return executionContext, nil
 }

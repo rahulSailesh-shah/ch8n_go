@@ -1,6 +1,6 @@
 import { NodeType } from "@/config/node-types";
 import { useReactFlow } from "@xyflow/react";
-import { GlobeIcon, MousePointerIcon } from "lucide-react";
+import { GlobeIcon, MousePointerIcon, WebhookIcon } from "lucide-react";
 import { useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
@@ -13,6 +13,7 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { Separator } from "./ui/separator";
+import { INITIAL_NODE_VARIABLE_NAME } from "@/config/node-components";
 
 export type NodeTypeOption = {
   type: NodeType;
@@ -28,6 +29,12 @@ const triggerNodes: NodeTypeOption[] = [
     description:
       "Runs the workflow on clicking a button. Good for manual testing.",
     icon: MousePointerIcon,
+  },
+  {
+    type: NodeType.WEBHOOK_TRIGGER,
+    label: "Trigger via Webhook",
+    description: "Runs the workflow via a webhook.",
+    icon: WebhookIcon,
   },
 ];
 
@@ -83,7 +90,7 @@ export const NodeSelector = ({
           type: nodeType.type,
           name: nodeType.type,
           position: flowPosition,
-          data: {},
+          data: { variableName: INITIAL_NODE_VARIABLE_NAME[nodeType.type] },
         };
         if (hasInitialTrigger) {
           return [newNode];

@@ -341,19 +341,6 @@ func (s *workflowService) ExecuteWorkflow(ctx context.Context, req *dto.ExecuteW
 	if err != nil {
 		return nil, err
 	}
-
-	// res, err := s.inngestService.ExecuteDirect(&inngest.ExecuteWorkflowRequest{
-	// 	WorkflowID: req.ID,
-	// 	Nodes:      nodes,
-	// 	Edges:      edges,
-	// })
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// data, _ := json.MarshalIndent(res, "", "  ")
-	// fmt.Println(string(data))
-
 	if err := s.inngestService.ExecuteWorkflow(ctx, &inngest.ExecuteWorkflowRequest{
 		WorkflowID: req.ID,
 		Nodes:      nodes,

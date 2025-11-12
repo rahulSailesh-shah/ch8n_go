@@ -31,10 +31,16 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 
 const formSchema = z.object({
+  variableName: z
+    .string()
+    .min(1, { message: "Variable name is required" })
+    .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+      message:
+        "Variable name must start with a letter or underscore and can only contain letters, numbers, and underscores",
+    }),
   endpoint: z.string().min(1, { message: "Endpoint is required" }),
   method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
   body: z.string().optional(),
-  //   .refine(),
 });
 
 export type HTTPRequestFormValues = z.infer<typeof formSchema>;
@@ -55,6 +61,7 @@ export const HTTPRequestDialog = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      variableName: defaultValues.variableName || "",
       endpoint: defaultValues.endpoint || "",
       method: defaultValues.method || "GET",
       body: defaultValues.body || "",
@@ -64,6 +71,7 @@ export const HTTPRequestDialog = ({
   useEffect(() => {
     if (open) {
       form.reset({
+        variableName: defaultValues.variableName,
         endpoint: defaultValues.endpoint,
         method: defaultValues.method,
         body: defaultValues.body,
@@ -96,6 +104,23 @@ export const HTTPRequestDialog = ({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-8 mt-4"
           >
+            <FormField
+              control={form.control}
+              name="variableName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Variable Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    Use this variable name to refrence the data frpm this node
+                    in other nodes
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="method"

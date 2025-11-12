@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"io"
 	"time"
 
 	"github.com/google/uuid"
@@ -41,6 +42,11 @@ type GetWorkflowsRequest struct {
 	Limit  int32  `json:"limit" binding:"required"`
 	Offset int32  `json:"offset" binding:"required"`
 	UserID string `json:"userId" binding:"required"`
+}
+
+type WebhookRequest struct {
+	WorkflowID uuid.UUID     `json:"workflow_id"`
+	Data       io.ReadCloser `json:"data"`
 }
 
 type PaginatedWorkflowsResponse struct {

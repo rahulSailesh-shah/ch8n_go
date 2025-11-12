@@ -82,4 +82,4 @@ dev:
 		exit 1; \
 	fi
 
-.PHONY: build run-backend clean watch docker-run docker-down migrate-up migrate-down migrate-status run-frontend run-auth-service dev run-inngest
+.PHONY: build run-backend clean watch docker-run docker-down migrate-up migrate-down migrate-status run-frontend run-auth-service dev run-inngest run-studio

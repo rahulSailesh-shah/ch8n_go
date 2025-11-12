@@ -1,31 +1,58 @@
 import { memo, useState } from "react";
-import type { NodeProps } from "@xyflow/react";
+import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
 import { MousePointer } from "lucide-react";
 import { BaseTriggerNode } from "../base-trigger-node";
 import { ManualTriggerDialog } from "./dialog";
 
-export const ManualTriggerNode = memo((props: NodeProps) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+type ManualTriggerNodeData = {
+  variableName: string;
+  input?: string;
+};
 
-  const handleOpenSettings = () => {
-    setIsDialogOpen(true);
-  };
+type ManualTriggerNodeType = Node<ManualTriggerNodeData>;
 
-  const nodeStatus = "initial";
+export const ManualTriggerNode = memo(
+  (props: NodeProps<ManualTriggerNodeType>) => {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const { setNodes } = useReactFlow();
 
-  return (
-    <>
-      <ManualTriggerDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
-      <BaseTriggerNode
-        {...props}
-        icon={MousePointer}
-        name="When Clicked 'Execute Workflow'"
-        onSettingsClick={handleOpenSettings}
-        onDoubleClick={handleOpenSettings}
-        status={nodeStatus}
-      />
-    </>
-  );
-});
+    const handleOpenSettings = () => {
+      setIsDialogOpen(true);
+    };
+
+    const nodeData = props.data;
+
+    const nodeStatus = "initial";
+
+    const handleSubmit = (values: ManualTriggerNodeData) => {
+      setNodes((nodes) =>
+        nodes.map((node) =>
+          node.id === props.id
+            ? { ...node, data: { ...node.data, ...values } }
+            : node
+        )
+      );
+    };
+
+    return (
+      <>
+        <ManualTriggerDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSubmit={handleSubmit}
+          defaultValues={nodeData}
+        />
+        <BaseTriggerNode
+          {...props}
+          icon={MousePointer}
+          name="Manual Trigger"
+          onSettingsClick={handleOpenSettings}
+          onDoubleClick={handleOpenSettings}
+          status={nodeStatus}
+        />
+      </>
+    );
+  }
+);
 
 ManualTriggerNode.displayName = "ManualTriggerNode";

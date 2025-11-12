@@ -9,10 +9,12 @@ import (
 
 type Service struct {
 	Workflow WorkflowService
+	Webhook  WebhookService
 }
 
 func NewService(queries *repo.Queries, cfg *config.AppConfig, db *pgxpool.Pool, inngestService *inngest.Inngest) *Service {
 	return &Service{
 		Workflow: NewWorkflowService(queries, db, inngestService),
+		Webhook:  NewWebhookService(queries, db, inngestService),
 	}
 }

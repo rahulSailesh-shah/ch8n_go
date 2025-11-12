@@ -29,15 +29,18 @@ func RegisterRoutes(r *gin.Engine, service service.Service, inngest inngest.Inng
 		})
 	})
 
-	// Testing Inngest
+	// Inngest Endpoint
 	r.Any("/api/inngest", inngest.Handler())
 
+	// Webhook Endpoint,
+	// TODO: Protect this endpoint with auth token
+	webhookHandler := handler.NewWebhookHandler(service.Webhook)
+	r.POST("/api/webhook/:workflow_id", webhookHandler.HandleWebhook)
+
+	// Protected routes
 	protectedGroup := r.Group("")
 	protectedGroup.Use(middleware.AuthMiddleware(authKeys))
 	protectedGroup.Use(middleware.SubscriptionMiddleware(polarConfig))
-
-	// Inngest route
-	// protectedGroup.Any("/api/inngest", inngest.Handler())
 
 	// Workflow routes
 	workflowHandler := handler.NewWorkflowHandler(service.Workflow)

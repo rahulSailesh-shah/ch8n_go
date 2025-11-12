@@ -6,6 +6,9 @@ RETURNING *;
 -- name: GetWorkflowByID :one
 SELECT * FROM workflow WHERE id = $1 AND user_id = $2;
 
+-- name: GetWorkflow :one
+SELECT * FROM workflow WHERE id = $1;
+
 -- name: GetWorkflowsByUserID :many
 SELECT id, name, description, user_id, created_at, updated_at, COUNT(*) OVER() as total_count
 FROM workflow

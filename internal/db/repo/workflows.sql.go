@@ -47,6 +47,24 @@ func (q *Queries) DeleteWorkflow(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getWorkflow = `-- name: GetWorkflow :one
+SELECT id, user_id, name, description, created_at, updated_at FROM workflow WHERE id = $1
+`
+
+func (q *Queries) GetWorkflow(ctx context.Context, id uuid.UUID) (Workflow, error) {
+	row := q.db.QueryRow(ctx, getWorkflow, id)
+	var i Workflow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getWorkflowByID = `-- name: GetWorkflowByID :one
 SELECT id, user_id, name, description, created_at, updated_at FROM workflow WHERE id = $1 AND user_id = $2
 `

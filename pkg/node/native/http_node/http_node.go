@@ -34,6 +34,9 @@ func NewHTTPRequestNode() (*HTTPRequestNode, error) {
 }
 
 func (n *HTTPRequestNode) Validate(params map[string]any) error {
+	if _, ok := params["variableName"]; !ok {
+		return fmt.Errorf("variable name is required")
+	}
 	if _, ok := params["endpoint"]; !ok {
 		return fmt.Errorf("endpoint is required")
 	}
